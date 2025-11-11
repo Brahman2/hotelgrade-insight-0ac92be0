@@ -152,28 +152,11 @@ const Analyze = () => {
       }, index * 3000);
     });
 
-    // Countdown timer - store data in ref for navigation
-    let finalCompetitors: CompetitorData[] = [];
-    let finalTargetHotel: TargetHotel | null = null;
-    
+    // Countdown timer
     const countdownInterval = setInterval(() => {
       setSecondsRemaining((prev) => {
         if (prev <= 1) {
           clearInterval(countdownInterval);
-          // Navigate with the latest data
-          setCompetitors((currentCompetitors) => {
-            setTargetHotel((currentTarget) => {
-              navigate("/results", { 
-                state: { 
-                  ...formData, 
-                  competitors: currentCompetitors, 
-                  targetHotel: currentTarget 
-                } 
-              });
-              return currentTarget;
-            });
-            return currentCompetitors;
-          });
           return 0;
         }
         return prev - 1;
@@ -182,6 +165,19 @@ const Analyze = () => {
 
     return () => clearInterval(countdownInterval);
   }, [formData, navigate, isScriptLoaded]);
+
+  // Separate useEffect to handle navigation when countdown reaches 0
+  useEffect(() => {
+    if (secondsRemaining === 0) {
+      navigate("/results", {
+        state: {
+          ...formData,
+          competitors,
+          targetHotel,
+        },
+      });
+    }
+  }, [secondsRemaining, formData, competitors, targetHotel, navigate]);
 
   if (!formData) return null;
 
