@@ -55,9 +55,17 @@ const Analyze = () => {
       return;
     }
 
+    console.log('🚀 Analyze page mounted - Starting hotel analysis...');
+    console.log('📍 Hotel details:', { 
+      hotel_name: formData.hotelName, 
+      city: formData.city, 
+      state: formData.state 
+    });
+
     // Fetch competitors from API
     const fetchCompetitorsAndGeocode = async () => {
       try {
+        console.log('📡 Calling API to find competitors...');
         setMapLoading(true);
         setApiError("");
         
@@ -79,7 +87,9 @@ const Analyze = () => {
         }
 
         const data = await response.json();
-        console.log('Competitor API Response:', data);
+        console.log('✅ API Response received:', data);
+        console.log('🏨 Target hotel:', data.target);
+        console.log('🔴 Competitors found:', data.competitors?.length || 0);
 
         // Extract target hotel
         if (data.target && data.target.lat && data.target.lng) {
@@ -90,6 +100,7 @@ const Analyze = () => {
           };
           setTargetHotel(target);
           setHotelCenter({ lat: target.lat, lng: target.lng });
+          console.log('📍 Map centered on target hotel:', target);
         } else {
           throw new Error('Target hotel location not found');
         }
@@ -103,11 +114,12 @@ const Analyze = () => {
             rating: comp.rating || 0,
           }));
           setCompetitors(apiCompetitors);
+          console.log('✅ Competitors loaded and ready to display on map');
         }
 
         setMapLoading(false);
       } catch (error) {
-        console.error("Error fetching competitors:", error);
+        console.error("❌ Error fetching competitors:", error);
         setApiError(error instanceof Error ? error.message : "Failed to load hotel data");
         setMapLoading(false);
       }
@@ -116,6 +128,8 @@ const Analyze = () => {
     // Wait for Google Maps to load before fetching
     if (isScriptLoaded) {
       fetchCompetitorsAndGeocode();
+    } else {
+      console.log('⏳ Waiting for Google Maps to load...');
     }
 
     // Scanning progress animation (3 seconds per step)
@@ -125,12 +139,28 @@ const Analyze = () => {
       }, index * 3000);
     });
 
-    // Countdown timer
+    // Countdown timer - store data in ref for navigation
+    let finalCompetitors: CompetitorData[] = [];
+    let finalTargetHotel: TargetHotel | null = null;
+    
     const countdownInterval = setInterval(() => {
       setSecondsRemaining((prev) => {
         if (prev <= 1) {
           clearInterval(countdownInterval);
-          navigate("/results", { state: { ...formData, competitors, targetHotel } });
+          // Navigate with the latest data
+          setCompetitors((currentCompetitors) => {
+            setTargetHotel((currentTarget) => {
+              navigate("/results", { 
+                state: { 
+                  ...formData, 
+                  competitors: currentCompetitors, 
+                  targetHotel: currentTarget 
+                } 
+              });
+              return currentTarget;
+            });
+            return currentCompetitors;
+          });
           return 0;
         }
         return prev - 1;
@@ -138,7 +168,7 @@ const Analyze = () => {
     }, 1000);
 
     return () => clearInterval(countdownInterval);
-  }, [formData, navigate, isScriptLoaded, competitors]);
+  }, [formData, navigate, isScriptLoaded]);
 
   if (!formData) return null;
 
@@ -238,7 +268,10 @@ const Analyze = () => {
               </div>
             ) : mapLoading ? (
               <div className="w-full h-[450px] bg-muted animate-pulse rounded-lg flex items-center justify-center">
-                <p className="text-muted-foreground">Loading map...</p>
+                <div className="text-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
+                  <p className="text-muted-foreground">Loading competitors...</p>
+                </div>
               </div>
             ) : (
               <div className="rounded-lg overflow-hidden border border-border">
