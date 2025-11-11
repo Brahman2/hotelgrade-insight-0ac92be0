@@ -172,6 +172,10 @@ const Analyze = () => {
         <div className="lg:w-[40%] bg-muted/30 p-6 lg:p-8 overflow-y-auto">
           {/* Header */}
           <div className="mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <img src="/logo-icon.svg" alt="HotelGrader" className="h-8 w-8" />
+              <span className="text-xl font-bold text-foreground">HotelGrader</span>
+            </div>
             <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">Analyzing {formData.hotelName}</h1>
             <p className="text-muted-foreground">
               {formData.city}, {formData.state}

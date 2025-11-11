@@ -282,6 +282,10 @@ const Results = () => {
       <div className="max-w-7xl mx-auto px-4 py-8 space-y-12">
         {/* Header Section */}
         <div className="text-center space-y-6">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <img src="/logo-icon.svg" alt="HotelGrader" className="h-8 w-8" />
+            <span className="text-xl font-bold text-foreground">HotelGrader</span>
+          </div>
           <div>
             <h1 className="text-4xl font-bold text-foreground mb-2">{formData.hotelName}</h1>
             <p className="text-lg text-muted-foreground">

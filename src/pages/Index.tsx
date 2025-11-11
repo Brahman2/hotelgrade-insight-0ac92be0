@@ -62,7 +62,7 @@ const Index = () => {
       >
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Building2 className="h-6 w-6 text-primary" />
+            <img src="/logo-icon.svg" alt="HotelGrader" className="h-8 w-8" />
             <span className="text-xl font-bold text-foreground">HotelGrader</span>
           </div>
           <nav className="hidden md:flex items-center gap-8">
