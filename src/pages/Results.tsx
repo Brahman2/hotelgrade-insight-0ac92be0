@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -21,7 +22,6 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
-import { useState } from "react";
 
 const Results = () => {
   const location = useLocation();
@@ -41,8 +41,26 @@ const Results = () => {
   const totalHotels = 15;
   const percentile = 20;
 
-  const hotelCenter = { lat: 41.8781, lng: -87.6298 };
+  const [hotelCenter, setHotelCenter] = useState({ lat: 0, lng: 0 });
   const competitors = formData.competitors || [];
+
+  // Geocode the location when component mounts
+  useEffect(() => {
+    if (isScriptLoaded && formData.city && formData.state) {
+      const address = `${formData.city}, ${formData.state}`;
+      const geocoder = new google.maps.Geocoder();
+      
+      geocoder.geocode({ address }, (results, status) => {
+        if (status === "OK" && results && results[0]) {
+          const location = results[0].geometry.location;
+          setHotelCenter({ lat: location.lat(), lng: location.lng() });
+        } else {
+          // Fallback to Costa Mesa if geocoding fails
+          setHotelCenter({ lat: 33.6415, lng: -117.9187 });
+        }
+      });
+    }
+  }, [isScriptLoaded, formData.city, formData.state]);
 
   const categories = [
     {
