@@ -31,7 +31,7 @@ const Analyze = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const formData = location.state as { hotelName: string; city: string; state: string };
-  
+
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [secondsRemaining, setSecondsRemaining] = useState(30);
   const [phone, setPhone] = useState("");
@@ -58,7 +58,7 @@ const Analyze = () => {
           lng: hotelCenter.lng + (Math.random() - 0.5) * 0.03,
           rating: 3.5 + Math.random() * 1.5,
         }));
-        
+
         setTimeout(() => {
           setCompetitors(mockCompetitors);
           setMapLoading(false);
@@ -113,9 +113,7 @@ const Analyze = () => {
         <div className="lg:w-[40%] bg-muted/30 p-6 lg:p-8 overflow-y-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
-              Analyzing {formData.hotelName}
-            </h1>
+            <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">Analyzing {formData.hotelName}</h1>
             <p className="text-muted-foreground">
               {formData.city}, {formData.state}
             </p>
@@ -123,17 +121,13 @@ const Analyze = () => {
 
           {/* Scanning Progress */}
           <div className="mb-8">
-            <h2 className="text-xl font-semibold text-foreground mb-6">
-              Analysis in Progress...
-            </h2>
+            <h2 className="text-xl font-semibold text-foreground mb-6">Analysis in Progress...</h2>
             <div className="space-y-3">
               {scanningSteps.map((step, index) => (
                 <div
                   key={index}
                   className={`flex items-start gap-3 transition-all duration-500 ${
-                    completedSteps.includes(index)
-                      ? "text-green-600 dark:text-green-500"
-                      : "text-muted-foreground"
+                    completedSteps.includes(index) ? "text-green-600 dark:text-green-500" : "text-muted-foreground"
                   }`}
                 >
                   <div className="mt-0.5">
@@ -155,9 +149,7 @@ const Analyze = () => {
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
               <div>
                 <p className="font-semibold text-foreground">Running...</p>
-                <p className="text-sm text-muted-foreground">
-                  {secondsRemaining} seconds remaining
-                </p>
+                <p className="text-sm text-muted-foreground">{secondsRemaining} seconds remaining</p>
               </div>
             </div>
           </Card>
@@ -167,24 +159,12 @@ const Analyze = () => {
           {/* Bottom Section */}
           <div className="space-y-4">
             <p className="font-semibold text-foreground">Can't wait for results?</p>
-            <Input
-              type="tel"
-              placeholder="555-123-4567"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-            />
-            <Input
-              type="email"
-              placeholder="you@hotel.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            <Input type="tel" placeholder="555-123-4567" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            <Input type="email" placeholder="you@hotel.com" value={email} onChange={(e) => setEmail(e.target.value)} />
             <Button onClick={handleNotifyMe} className="w-full">
               Text & Email Me Results
             </Button>
-            <p className="text-xs text-muted-foreground text-center">
-              We'll send your report immediately
-            </p>
+            <p className="text-xs text-muted-foreground text-center">We'll send your report immediately</p>
           </div>
         </div>
 
@@ -200,9 +180,7 @@ const Analyze = () => {
 
           {/* Map Section */}
           <div className="mb-4">
-            <h2 className="text-xl font-semibold text-foreground mb-4">
-              Competitive Landscape
-            </h2>
+            <h2 className="text-xl font-semibold text-foreground mb-4">Competitive Landscape</h2>
 
             {mapLoading ? (
               <div className="w-full h-[450px] bg-muted animate-pulse rounded-lg flex items-center justify-center">
@@ -210,8 +188,8 @@ const Analyze = () => {
               </div>
             ) : (
               <div className="rounded-lg overflow-hidden border border-border">
-                <LoadScript 
-                  googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ""}
+                <LoadScript
+                  googleMapsApiKey="AIzaSyB7TPyciCLKNs8Ukp_8q9xEdzYycJa7D3M"
                   onLoad={() => setIsScriptLoaded(true)}
                 >
                   {isScriptLoaded && (
@@ -281,9 +259,7 @@ const Analyze = () => {
                   <span className="text-lg">🔴</span> Competitors
                 </span>
               </div>
-              <span className="text-muted-foreground">
-                Showing {competitors.length + 1} hotels within 2 miles
-              </span>
+              <span className="text-muted-foreground">Showing {competitors.length + 1} hotels within 2 miles</span>
             </div>
           </Card>
         </div>
