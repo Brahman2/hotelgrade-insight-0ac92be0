@@ -325,12 +325,16 @@ const Analyze = () => {
                             <Marker
                               position={{ lat: targetHotel.lat, lng: targetHotel.lng }}
                               icon={{
-                                path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
+                                path: window.google.maps.SymbolPath.CIRCLE,
                                 fillColor: "#0EA5E9",
                                 fillOpacity: 1,
-                                strokeWeight: 3,
-                                strokeColor: "#ffffff",
-                                scale: 2.5,
+                                strokeColor: "#FFFFFF",
+                                strokeWeight: 2,
+                                scale: 15,
+                              }}
+                              label={{
+                                text: "🏨",
+                                fontSize: "24px",
                               }}
                               title={`${targetHotel.name} (Your Hotel)`}
                             />
@@ -345,12 +349,12 @@ const Analyze = () => {
                               key={index}
                               position={{ lat: competitor.lat, lng: competitor.lng }}
                               icon={{
-                                path: google.maps.SymbolPath.CIRCLE,
+                                path: window.google.maps.SymbolPath.CIRCLE,
                                 fillColor: "#EF4444",
-                                fillOpacity: 0.9,
-                                strokeWeight: 2,
-                                strokeColor: "#ffffff",
-                                scale: 6,
+                                fillOpacity: 1,
+                                strokeColor: "#FFFFFF",
+                                strokeWeight: 1,
+                                scale: 8,
                               }}
                               title={`${competitor.name} - ${competitor.rating.toFixed(1)} ★`}
                             />
