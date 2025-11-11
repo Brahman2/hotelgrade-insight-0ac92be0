@@ -66,6 +66,11 @@ const Analyze = () => {
     const fetchCompetitorsAndGeocode = async () => {
       try {
         console.log('📡 Calling API to find competitors...');
+        console.log('🔍 API Request Data:', {
+          hotel_name: formData.hotelName,
+          city: formData.city,
+          state: formData.state
+        });
         setMapLoading(true);
         setApiError("");
         
@@ -82,14 +87,17 @@ const Analyze = () => {
           }),
         });
 
+        console.log('📥 API Response Status:', response.status, response.statusText);
+
         if (!response.ok) {
           throw new Error('Hotel not found or API error');
         }
 
         const data = await response.json();
-        console.log('✅ API Response received:', data);
-        console.log('🏨 Target hotel:', data.target);
-        console.log('🔴 Competitors found:', data.competitors?.length || 0);
+        console.log('✅ Full API Response:', data);
+        console.log('🏨 Target hotel data:', data.target);
+        console.log('🔴 Competitors array:', data.competitors);
+        console.log('📊 Number of competitors found:', data.competitors?.length || 0);
 
         // Extract target hotel
         if (data.target && data.target.lat && data.target.lng) {
@@ -98,10 +106,12 @@ const Analyze = () => {
             lat: data.target.lat,
             lng: data.target.lng,
           };
+          console.log('🎯 Setting target hotel:', target);
           setTargetHotel(target);
           setHotelCenter({ lat: target.lat, lng: target.lng });
-          console.log('📍 Map centered on target hotel:', target);
+          console.log('📍 Map center updated to:', { lat: target.lat, lng: target.lng });
         } else {
+          console.error('❌ Target hotel missing location data:', data.target);
           throw new Error('Target hotel location not found');
         }
 
@@ -113,8 +123,11 @@ const Analyze = () => {
             lng: comp.lng,
             rating: comp.rating || 0,
           }));
+          console.log('🔄 Setting competitors state with:', apiCompetitors);
           setCompetitors(apiCompetitors);
-          console.log('✅ Competitors loaded and ready to display on map');
+          console.log('✅ Competitors state updated - count:', apiCompetitors.length);
+        } else {
+          console.warn('⚠️ No competitors found in API response');
         }
 
         setMapLoading(false);
@@ -277,59 +290,75 @@ const Analyze = () => {
               <div className="rounded-lg overflow-hidden border border-border">
                 <LoadScript
                   googleMapsApiKey="AIzaSyB7TPyciCLKNs8Ukp_8q9xEdzYycJa7D3M"
-                  onLoad={() => setIsScriptLoaded(true)}
+                  onLoad={() => {
+                    console.log('🗺️ Google Maps script loaded');
+                    setIsScriptLoaded(true);
+                  }}
                 >
-                  {isScriptLoaded && (
-                    <GoogleMap
-                      mapContainerStyle={mapContainerStyle}
-                      center={hotelCenter}
-                      zoom={14}
-                      options={{
-                        disableDefaultUI: false,
-                        zoomControl: true,
-                        styles: [
-                          {
-                            featureType: "poi",
-                            elementType: "labels",
-                            stylers: [{ visibility: "off" }],
-                          },
-                        ],
-                      }}
-                    >
-                      {/* Target Hotel Marker - LARGE BLUE */}
-                      {targetHotel && (
-                        <Marker
-                          position={{ lat: targetHotel.lat, lng: targetHotel.lng }}
-                          icon={{
-                            path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
-                            fillColor: "#0EA5E9",
-                            fillOpacity: 1,
-                            strokeWeight: 3,
-                            strokeColor: "#ffffff",
-                            scale: 2.5,
-                          }}
-                          title={`${targetHotel.name} (Your Hotel)`}
-                        />
-                      )}
+                  {isScriptLoaded && (() => {
+                    console.log('🗺️ Rendering GoogleMap component');
+                    console.log('📍 Map center:', hotelCenter);
+                    console.log('🎯 Target hotel for marker:', targetHotel);
+                    console.log('🔴 Competitors for markers:', competitors);
+                    console.log('📊 Total markers to render:', (targetHotel ? 1 : 0) + competitors.length);
+                    return (
+                      <GoogleMap
+                        mapContainerStyle={mapContainerStyle}
+                        center={hotelCenter}
+                        zoom={14}
+                        options={{
+                          disableDefaultUI: false,
+                          zoomControl: true,
+                          styles: [
+                            {
+                              featureType: "poi",
+                              elementType: "labels",
+                              stylers: [{ visibility: "off" }],
+                            },
+                          ],
+                        }}
+                      >
+                        {/* Target Hotel Marker - LARGE BLUE */}
+                        {targetHotel && (() => {
+                          console.log('🔵 Rendering BLUE target marker at:', targetHotel.lat, targetHotel.lng);
+                          return (
+                            <Marker
+                              position={{ lat: targetHotel.lat, lng: targetHotel.lng }}
+                              icon={{
+                                path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
+                                fillColor: "#0EA5E9",
+                                fillOpacity: 1,
+                                strokeWeight: 3,
+                                strokeColor: "#ffffff",
+                                scale: 2.5,
+                              }}
+                              title={`${targetHotel.name} (Your Hotel)`}
+                            />
+                          );
+                        })()}
 
-                      {/* Competitor Markers - SMALL RED */}
-                      {competitors.map((competitor, index) => (
-                        <Marker
-                          key={index}
-                          position={{ lat: competitor.lat, lng: competitor.lng }}
-                          icon={{
-                            path: google.maps.SymbolPath.CIRCLE,
-                            fillColor: "#EF4444",
-                            fillOpacity: 0.9,
-                            strokeWeight: 2,
-                            strokeColor: "#ffffff",
-                            scale: 6,
-                          }}
-                          title={`${competitor.name} - ${competitor.rating.toFixed(1)} ★`}
-                        />
-                      ))}
-                    </GoogleMap>
-                  )}
+                        {/* Competitor Markers - SMALL RED */}
+                        {competitors.map((competitor, index) => {
+                          console.log(`🔴 Rendering RED competitor marker #${index + 1}:`, competitor.name, 'at', competitor.lat, competitor.lng);
+                          return (
+                            <Marker
+                              key={index}
+                              position={{ lat: competitor.lat, lng: competitor.lng }}
+                              icon={{
+                                path: google.maps.SymbolPath.CIRCLE,
+                                fillColor: "#EF4444",
+                                fillOpacity: 0.9,
+                                strokeWeight: 2,
+                                strokeColor: "#ffffff",
+                                scale: 6,
+                              }}
+                              title={`${competitor.name} - ${competitor.rating.toFixed(1)} ★`}
+                            />
+                          );
+                        })}
+                      </GoogleMap>
+                    );
+                  })()}
                 </LoadScript>
               </div>
             )}
