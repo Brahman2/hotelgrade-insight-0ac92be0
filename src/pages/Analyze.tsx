@@ -14,6 +14,12 @@ interface CompetitorData {
   rating: number;
 }
 
+interface TargetHotel {
+  name: string;
+  lat: number;
+  lng: number;
+}
+
 const scanningSteps = [
   "🏨 Finding hotel & competitors",
   "⭐ Checking Google Business Profile",
@@ -37,7 +43,9 @@ const Analyze = () => {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [competitors, setCompetitors] = useState<CompetitorData[]>([]);
+  const [targetHotel, setTargetHotel] = useState<TargetHotel | null>(null);
   const [mapLoading, setMapLoading] = useState(true);
+  const [apiError, setApiError] = useState<string>("");
   const [hotelCenter, setHotelCenter] = useState({ lat: 0, lng: 0 });
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
 
@@ -47,11 +55,14 @@ const Analyze = () => {
       return;
     }
 
-    // Fetch competitors from API and geocode
+    // Fetch competitors from API
     const fetchCompetitorsAndGeocode = async () => {
       try {
-        // Call the Railway API to get competitors
-        const response = await fetch('https://stellar-perfection-production.up.railway.app/api/find-competitors', {
+        setMapLoading(true);
+        setApiError("");
+        
+        // Call the API to get target hotel and competitors
+        const response = await fetch('https://web-production-13e22.up.railway.app/api/find-competitors', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -63,40 +74,41 @@ const Analyze = () => {
           }),
         });
 
+        if (!response.ok) {
+          throw new Error('Hotel not found or API error');
+        }
+
         const data = await response.json();
         console.log('Competitor API Response:', data);
 
-        // Geocode to get the center point
-        const address = `${formData.city}, ${formData.state}`;
-        const geocoder = new google.maps.Geocoder();
-        
-        geocoder.geocode({ address }, (results, status) => {
-          if (status === "OK" && results && results[0]) {
-            const location = results[0].geometry.location;
-            const center = { lat: location.lat(), lng: location.lng() };
-            setHotelCenter(center);
+        // Extract target hotel
+        if (data.target && data.target.lat && data.target.lng) {
+          const target: TargetHotel = {
+            name: data.target.name || formData.hotelName,
+            lat: data.target.lat,
+            lng: data.target.lng,
+          };
+          setTargetHotel(target);
+          setHotelCenter({ lat: target.lat, lng: target.lng });
+        } else {
+          throw new Error('Target hotel location not found');
+        }
 
-            // Use API response for competitors if available
-            if (data.competitors && Array.isArray(data.competitors)) {
-              const apiCompetitors: CompetitorData[] = data.competitors.map((comp: any) => ({
-                name: comp.name || comp.hotel_name || 'Unknown Hotel',
-                lat: comp.lat || comp.latitude || center.lat + (Math.random() - 0.5) * 0.03,
-                lng: comp.lng || comp.longitude || center.lng + (Math.random() - 0.5) * 0.03,
-                rating: comp.rating || 4.0,
-              }));
-              setCompetitors(apiCompetitors);
-            }
+        // Extract competitors
+        if (data.competitors && Array.isArray(data.competitors)) {
+          const apiCompetitors: CompetitorData[] = data.competitors.map((comp: any) => ({
+            name: comp.name || 'Unknown Hotel',
+            lat: comp.lat,
+            lng: comp.lng,
+            rating: comp.rating || 0,
+          }));
+          setCompetitors(apiCompetitors);
+        }
 
-            setMapLoading(false);
-          } else {
-            console.error("Geocoding failed:", status);
-            setHotelCenter({ lat: 33.6415, lng: -117.9187 });
-            setMapLoading(false);
-          }
-        });
+        setMapLoading(false);
       } catch (error) {
         console.error("Error fetching competitors:", error);
-        setHotelCenter({ lat: 33.6415, lng: -117.9187 });
+        setApiError(error instanceof Error ? error.message : "Failed to load hotel data");
         setMapLoading(false);
       }
     };
@@ -217,7 +229,14 @@ const Analyze = () => {
           <div className="mb-4">
             <h2 className="text-xl font-semibold text-foreground mb-4">Competitive Landscape</h2>
 
-            {mapLoading ? (
+            {apiError ? (
+              <div className="w-full h-[450px] bg-muted rounded-lg flex items-center justify-center">
+                <div className="text-center">
+                  <p className="text-destructive font-semibold mb-2">Error Loading Map</p>
+                  <p className="text-muted-foreground text-sm">{apiError}</p>
+                </div>
+              </div>
+            ) : mapLoading ? (
               <div className="w-full h-[450px] bg-muted animate-pulse rounded-lg flex items-center justify-center">
                 <p className="text-muted-foreground">Loading map...</p>
               </div>
@@ -244,21 +263,23 @@ const Analyze = () => {
                         ],
                       }}
                     >
-                      {/* Target Hotel Marker */}
-                      <Marker
-                        position={hotelCenter}
-                        icon={{
-                          path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
-                          fillColor: "#0EA5E9",
-                          fillOpacity: 1,
-                          strokeWeight: 2,
-                          strokeColor: "#ffffff",
-                          scale: 2,
-                        }}
-                        title={formData.hotelName}
-                      />
+                      {/* Target Hotel Marker - LARGE BLUE */}
+                      {targetHotel && (
+                        <Marker
+                          position={{ lat: targetHotel.lat, lng: targetHotel.lng }}
+                          icon={{
+                            path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
+                            fillColor: "#0EA5E9",
+                            fillOpacity: 1,
+                            strokeWeight: 3,
+                            strokeColor: "#ffffff",
+                            scale: 2.5,
+                          }}
+                          title={`${targetHotel.name} (Your Hotel)`}
+                        />
+                      )}
 
-                      {/* Competitor Markers */}
+                      {/* Competitor Markers - SMALL RED */}
                       {competitors.map((competitor, index) => (
                         <Marker
                           key={index}
@@ -269,10 +290,9 @@ const Analyze = () => {
                             fillOpacity: 0.9,
                             strokeWeight: 2,
                             strokeColor: "#ffffff",
-                            scale: 8,
+                            scale: 6,
                           }}
                           title={`${competitor.name} - ${competitor.rating.toFixed(1)} ★`}
-                          animation={index < 3 ? google.maps.Animation.DROP : undefined}
                         />
                       ))}
                     </GoogleMap>
