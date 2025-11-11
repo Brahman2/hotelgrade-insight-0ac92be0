@@ -47,9 +47,26 @@ const Analyze = () => {
       return;
     }
 
-    // Geocode the city and state to get coordinates
-    const geocodeLocation = async () => {
+    // Fetch competitors from API and geocode
+    const fetchCompetitorsAndGeocode = async () => {
       try {
+        // Call the Railway API to get competitors
+        const response = await fetch('https://stellar-perfection-production.up.railway.app/api/find-competitors', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            hotel_name: formData.hotelName,
+            city: formData.city,
+            state: formData.state,
+          }),
+        });
+
+        const data = await response.json();
+        console.log('Competitor API Response:', data);
+
+        // Geocode to get the center point
         const address = `${formData.city}, ${formData.state}`;
         const geocoder = new google.maps.Geocoder();
         
@@ -59,33 +76,34 @@ const Analyze = () => {
             const center = { lat: location.lat(), lng: location.lng() };
             setHotelCenter(center);
 
-            // Generate mock competitors around the actual location
-            const mockCompetitors: CompetitorData[] = Array.from({ length: 12 }, (_, i) => ({
-              name: `Competitor Hotel ${i + 1}`,
-              lat: center.lat + (Math.random() - 0.5) * 0.03,
-              lng: center.lng + (Math.random() - 0.5) * 0.03,
-              rating: 3.5 + Math.random() * 1.5,
-            }));
+            // Use API response for competitors if available
+            if (data.competitors && Array.isArray(data.competitors)) {
+              const apiCompetitors: CompetitorData[] = data.competitors.map((comp: any) => ({
+                name: comp.name || comp.hotel_name || 'Unknown Hotel',
+                lat: comp.lat || comp.latitude || center.lat + (Math.random() - 0.5) * 0.03,
+                lng: comp.lng || comp.longitude || center.lng + (Math.random() - 0.5) * 0.03,
+                rating: comp.rating || 4.0,
+              }));
+              setCompetitors(apiCompetitors);
+            }
 
-            setCompetitors(mockCompetitors);
             setMapLoading(false);
           } else {
             console.error("Geocoding failed:", status);
-            // Fallback to a default location if geocoding fails
-            setHotelCenter({ lat: 33.6415, lng: -117.9187 }); // Costa Mesa default
+            setHotelCenter({ lat: 33.6415, lng: -117.9187 });
             setMapLoading(false);
           }
         });
       } catch (error) {
-        console.error("Error geocoding location:", error);
-        setHotelCenter({ lat: 33.6415, lng: -117.9187 }); // Costa Mesa default
+        console.error("Error fetching competitors:", error);
+        setHotelCenter({ lat: 33.6415, lng: -117.9187 });
         setMapLoading(false);
       }
     };
 
-    // Wait for Google Maps to load before geocoding
+    // Wait for Google Maps to load before fetching
     if (isScriptLoaded) {
-      geocodeLocation();
+      fetchCompetitorsAndGeocode();
     }
 
     // Scanning progress animation (3 seconds per step)
