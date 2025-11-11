@@ -1,14 +1,33 @@
-<svg width="240" height="48" viewBox="0 0 240 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Icon -->
-  <rect x="8" y="12" width="32" height="32" rx="2" stroke="#0EA5E9" stroke-width="2.5" stroke-linejoin="round"/>
-  <path d="M16 12V8C16 6.89543 16.8954 6 18 6H30C31.1046 6 32 6.89543 32 8V12" stroke="#0EA5E9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M8 20H40" stroke="#0EA5E9" stroke-width="2.5" stroke-linecap="round"/>
-  <rect x="14" y="26" width="4" height="6" rx="0.5" fill="#0EA5E9"/>
-  <rect x="22" y="26" width="4" height="6" rx="0.5" fill="#0EA5E9"/>
-  <rect x="30" y="26" width="4" height="6" rx="0.5" fill="#0EA5E9"/>
-  <rect x="14" y="35" width="4" height="6" rx="0.5" fill="#0EA5E9"/>
-  <rect x="22" y="35" width="4" height="6" rx="0.5" fill="#0EA5E9"/>
-  <rect x="30" y="35" width="4" height="6" rx="0.5" fill="#0EA5E9"/>
+<svg width="280" height="48" viewBox="0 0 280 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Left building -->
+  <rect x="4" y="20" width="10" height="20" rx="1" fill="#0EA5E9"/>
+  <rect x="6" y="24" width="2" height="2" fill="white" opacity="0.7"/>
+  <rect x="10" y="24" width="2" height="2" fill="white" opacity="0.7"/>
+  <rect x="6" y="28" width="2" height="2" fill="white" opacity="0.7"/>
+  <rect x="10" y="28" width="2" height="2" fill="white" opacity="0.7"/>
+  <rect x="6" y="32" width="2" height="2" fill="white" opacity="0.7"/>
+  <rect x="10" y="32" width="2" height="2" fill="white" opacity="0.7"/>
+  
+  <!-- Center building (main hotel) -->
+  <rect x="16" y="8" width="16" height="32" rx="1" fill="#0EA5E9"/>
+  <rect x="19" y="12" width="3" height="3" fill="white" opacity="0.8"/>
+  <rect x="26" y="12" width="3" height="3" fill="white" opacity="0.8"/>
+  <rect x="19" y="17" width="3" height="3" fill="white" opacity="0.8"/>
+  <rect x="26" y="17" width="3" height="3" fill="white" opacity="0.8"/>
+  <rect x="19" y="22" width="3" height="3" fill="white" opacity="0.8"/>
+  <rect x="26" y="22" width="3" height="3" fill="white" opacity="0.8"/>
+  <rect x="19" y="27" width="3" height="3" fill="white" opacity="0.8"/>
+  <rect x="26" y="27" width="3" height="3" fill="white" opacity="0.8"/>
+  <rect x="22" y="34" width="4" height="6" fill="white" opacity="0.9"/>
+  
+  <!-- Right building -->
+  <rect x="34" y="20" width="10" height="20" rx="1" fill="#0EA5E9"/>
+  <rect x="36" y="24" width="2" height="2" fill="white" opacity="0.7"/>
+  <rect x="40" y="24" width="2" height="2" fill="white" opacity="0.7"/>
+  <rect x="36" y="28" width="2" height="2" fill="white" opacity="0.7"/>
+  <rect x="40" y="28" width="2" height="2" fill="white" opacity="0.7"/>
+  <rect x="36" y="32" width="2" height="2" fill="white" opacity="0.7"/>
+  <rect x="40" y="32" width="2" height="2" fill="white" opacity="0.7"/>
   
   <!-- Text: HotelGrader -->
   <text x="56" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="700" fill="#1E293B">HotelGrader</text>
