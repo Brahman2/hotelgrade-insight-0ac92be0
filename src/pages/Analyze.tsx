@@ -55,41 +55,24 @@ const Analyze = () => {
   console.log('🗺️ isScriptLoaded:', isScriptLoaded);
 
   useEffect(() => {
-    console.log('🔄 useEffect triggered');
-    console.log('✅ Condition check - isScriptLoaded:', isScriptLoaded);
     if (!formData) {
       navigate("/");
       return;
     }
 
-    console.log('🚀 Analyze page mounted - Starting hotel analysis...');
-    console.log('📍 Hotel details:', { 
-      hotel_name: formData.hotelName, 
-      city: formData.city, 
-      state: formData.state 
-    });
-    console.log('🔍 About to define fetchCompetitorsAndGeocode function');
+    console.log('🚀 Starting hotel analysis...');
+    console.log('📍 Hotel:', formData.hotelName, formData.city, formData.state);
 
-    // Fetch competitors from API
-    const fetchCompetitorsAndGeocode = async () => {
+    // Fetch competitors from API immediately
+    const fetchCompetitors = async () => {
+      console.log('📡 Fetching competitors...');
       try {
-        console.log('📡 Calling API to find competitors...');
-        console.log('🔍 API Request Data:', {
-          hotel_name: formData.hotelName,
-          city: formData.city,
-          state: formData.state
-        });
-        console.log('⏰ About to make fetch call NOW');
         setMapLoading(true);
         setApiError("");
         
-        // Call the API to get target hotel and competitors
-        console.log('🌐 Making fetch request to:', 'https://web-production-13e22.up.railway.app/api/find-competitors');
         const response = await fetch('https://web-production-13e22.up.railway.app/api/find-competitors', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             hotel_name: formData.hotelName,
             city: formData.city,
@@ -97,36 +80,23 @@ const Analyze = () => {
           }),
         });
 
-        console.log('📥 API Response Status:', response.status, response.statusText);
-
         if (!response.ok) {
           throw new Error('Hotel not found or API error');
         }
 
         const data = await response.json();
-        console.log('✅ API call completed successfully!');
-        console.log('✅ Full API Response:', data);
-        console.log('🏨 Target hotel data:', data.target);
-        console.log('🔴 Competitors array:', data.competitors);
-        console.log('📊 Number of competitors found:', data.competitors?.length || 0);
-
-        // Extract target hotel
+        console.log('✅ API Response:', data);
+        
         if (data.target && data.target.lat && data.target.lng) {
           const target: TargetHotel = {
             name: data.target.name || formData.hotelName,
             lat: data.target.lat,
             lng: data.target.lng,
           };
-          console.log('🎯 Setting target hotel:', target);
           setTargetHotel(target);
           setHotelCenter({ lat: target.lat, lng: target.lng });
-          console.log('📍 Map center updated to:', { lat: target.lat, lng: target.lng });
-        } else {
-          console.error('❌ Target hotel missing location data:', data.target);
-          throw new Error('Target hotel location not found');
         }
 
-        // Extract competitors
         if (data.competitors && Array.isArray(data.competitors)) {
           const apiCompetitors: CompetitorData[] = data.competitors.map((comp: any) => ({
             name: comp.name || 'Unknown Hotel',
@@ -134,11 +104,7 @@ const Analyze = () => {
             lng: comp.lng,
             rating: comp.rating || 0,
           }));
-          console.log('🔄 Setting competitors state with:', apiCompetitors);
           setCompetitors(apiCompetitors);
-          console.log('✅ Competitors state updated - count:', apiCompetitors.length);
-        } else {
-          console.warn('⚠️ No competitors found in API response');
         }
 
         setMapLoading(false);
@@ -149,14 +115,7 @@ const Analyze = () => {
       }
     };
 
-    // Wait for Google Maps to load before fetching
-    console.log('🔍 Checking if should fetch - isScriptLoaded:', isScriptLoaded);
-    if (isScriptLoaded) {
-      console.log('✅ Google Maps loaded! Calling fetchCompetitorsAndGeocode...');
-      fetchCompetitorsAndGeocode();
-    } else {
-      console.log('⏳ Waiting for Google Maps to load...');
-    }
+    fetchCompetitors();
 
     // Scanning progress animation (3 seconds per step)
     scanningSteps.forEach((_, index) => {
@@ -177,7 +136,7 @@ const Analyze = () => {
     }, 1000);
 
     return () => clearInterval(countdownInterval);
-  }, [formData, navigate, isScriptLoaded]);
+  }, [formData, navigate]);
 
   // Separate useEffect to handle navigation when countdown reaches 0
   useEffect(() => {
