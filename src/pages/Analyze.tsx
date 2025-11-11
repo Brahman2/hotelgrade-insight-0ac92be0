@@ -130,7 +130,7 @@ const Analyze = () => {
       setSecondsRemaining((prev) => {
         if (prev <= 1) {
           clearInterval(countdownInterval);
-          navigate("/results", { state: { ...formData, competitors } });
+          navigate("/results", { state: { ...formData, competitors, targetHotel } });
           return 0;
         }
         return prev - 1;

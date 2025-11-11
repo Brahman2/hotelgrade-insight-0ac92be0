@@ -41,26 +41,13 @@ const Results = () => {
   const totalHotels = 15;
   const percentile = 20;
 
-  const [hotelCenter, setHotelCenter] = useState({ lat: 0, lng: 0 });
   const competitors = formData.competitors || [];
-
-  // Geocode the location when component mounts
-  useEffect(() => {
-    if (isScriptLoaded && formData.city && formData.state) {
-      const address = `${formData.city}, ${formData.state}`;
-      const geocoder = new google.maps.Geocoder();
-      
-      geocoder.geocode({ address }, (results, status) => {
-        if (status === "OK" && results && results[0]) {
-          const location = results[0].geometry.location;
-          setHotelCenter({ lat: location.lat(), lng: location.lng() });
-        } else {
-          // Fallback to Costa Mesa if geocoding fails
-          setHotelCenter({ lat: 33.6415, lng: -117.9187 });
-        }
-      });
-    }
-  }, [isScriptLoaded, formData.city, formData.state]);
+  const targetHotel = formData.targetHotel;
+  
+  // Use target hotel location if available, otherwise use default
+  const hotelCenter = targetHotel 
+    ? { lat: targetHotel.lat, lng: targetHotel.lng }
+    : { lat: 33.6415, lng: -117.9187 };
 
   const categories = [
     {
@@ -359,20 +346,32 @@ const Results = () => {
                     options={{
                       disableDefaultUI: false,
                       zoomControl: true,
+                      styles: [
+                        {
+                          featureType: "poi",
+                          elementType: "labels",
+                          stylers: [{ visibility: "off" }],
+                        },
+                      ],
                     }}
                   >
-                    <Marker
-                      position={hotelCenter}
-                      icon={{
-                        path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
-                        fillColor: "#0EA5E9",
-                        fillOpacity: 1,
-                        strokeWeight: 2,
-                        strokeColor: "#ffffff",
-                        scale: 2,
-                      }}
-                      title={formData.hotelName}
-                    />
+                    {/* Target Hotel - LARGE BLUE Marker */}
+                    {targetHotel && (
+                      <Marker
+                        position={{ lat: targetHotel.lat, lng: targetHotel.lng }}
+                        icon={{
+                          path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
+                          fillColor: "#0EA5E9",
+                          fillOpacity: 1,
+                          strokeWeight: 3,
+                          strokeColor: "#ffffff",
+                          scale: 2.5,
+                        }}
+                        title={`${targetHotel.name} (Your Hotel)`}
+                      />
+                    )}
+                    
+                    {/* Competitors - SMALL RED Markers */}
                     {competitors.map((competitor: any, index: number) => (
                       <Marker
                         key={index}
@@ -383,7 +382,7 @@ const Results = () => {
                           fillOpacity: 0.9,
                           strokeWeight: 2,
                           strokeColor: "#ffffff",
-                          scale: 8,
+                          scale: 6,
                         }}
                         title={`${competitor.name} - ${competitor.rating.toFixed(1)} ★`}
                       />
