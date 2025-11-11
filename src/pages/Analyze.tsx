@@ -39,6 +39,7 @@ const Analyze = () => {
   const [competitors, setCompetitors] = useState<CompetitorData[]>([]);
   const [mapLoading, setMapLoading] = useState(true);
   const [hotelCenter, setHotelCenter] = useState({ lat: 41.8781, lng: -87.6298 }); // Default Chicago
+  const [isScriptLoaded, setIsScriptLoaded] = useState(false);
 
   useEffect(() => {
     if (!formData) {
@@ -209,55 +210,60 @@ const Analyze = () => {
               </div>
             ) : (
               <div className="rounded-lg overflow-hidden border border-border">
-                <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ""}>
-                  <GoogleMap
-                    mapContainerStyle={mapContainerStyle}
-                    center={hotelCenter}
-                    zoom={14}
-                    options={{
-                      disableDefaultUI: false,
-                      zoomControl: true,
-                      styles: [
-                        {
-                          featureType: "poi",
-                          elementType: "labels",
-                          stylers: [{ visibility: "off" }],
-                        },
-                      ],
-                    }}
-                  >
-                    {/* Target Hotel Marker */}
-                    <Marker
-                      position={hotelCenter}
-                      icon={{
-                        path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
-                        fillColor: "#0EA5E9",
-                        fillOpacity: 1,
-                        strokeWeight: 2,
-                        strokeColor: "#ffffff",
-                        scale: 2,
+                <LoadScript 
+                  googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ""}
+                  onLoad={() => setIsScriptLoaded(true)}
+                >
+                  {isScriptLoaded && (
+                    <GoogleMap
+                      mapContainerStyle={mapContainerStyle}
+                      center={hotelCenter}
+                      zoom={14}
+                      options={{
+                        disableDefaultUI: false,
+                        zoomControl: true,
+                        styles: [
+                          {
+                            featureType: "poi",
+                            elementType: "labels",
+                            stylers: [{ visibility: "off" }],
+                          },
+                        ],
                       }}
-                      title={formData.hotelName}
-                    />
-
-                    {/* Competitor Markers */}
-                    {competitors.map((competitor, index) => (
+                    >
+                      {/* Target Hotel Marker */}
                       <Marker
-                        key={index}
-                        position={{ lat: competitor.lat, lng: competitor.lng }}
+                        position={hotelCenter}
                         icon={{
-                          path: google.maps.SymbolPath.CIRCLE,
-                          fillColor: "#EF4444",
-                          fillOpacity: 0.9,
+                          path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
+                          fillColor: "#0EA5E9",
+                          fillOpacity: 1,
                           strokeWeight: 2,
                           strokeColor: "#ffffff",
-                          scale: 8,
+                          scale: 2,
                         }}
-                        title={`${competitor.name} - ${competitor.rating.toFixed(1)} ★`}
-                        animation={index < 3 ? google.maps.Animation.DROP : undefined}
+                        title={formData.hotelName}
                       />
-                    ))}
-                  </GoogleMap>
+
+                      {/* Competitor Markers */}
+                      {competitors.map((competitor, index) => (
+                        <Marker
+                          key={index}
+                          position={{ lat: competitor.lat, lng: competitor.lng }}
+                          icon={{
+                            path: google.maps.SymbolPath.CIRCLE,
+                            fillColor: "#EF4444",
+                            fillOpacity: 0.9,
+                            strokeWeight: 2,
+                            strokeColor: "#ffffff",
+                            scale: 8,
+                          }}
+                          title={`${competitor.name} - ${competitor.rating.toFixed(1)} ★`}
+                          animation={index < 3 ? google.maps.Animation.DROP : undefined}
+                        />
+                      ))}
+                    </GoogleMap>
+                  )}
                 </LoadScript>
               </div>
             )}
