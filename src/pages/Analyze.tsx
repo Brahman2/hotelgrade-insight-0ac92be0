@@ -1,16 +1,44 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, MapPin, Star, Image, ThumbsUp, Calendar, DollarSign, Wifi, TrendingUp, Phone, Mail } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Check, Loader2, Edit3 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
+
+interface CompetitorData {
+  name: string;
+  lat: number;
+  lng: number;
+  rating: number;
+}
+
+const scanningSteps = [
+  "🏨 Finding hotel & competitors",
+  "⭐ Checking Google Business Profile",
+  "💬 Analyzing reviews across platforms",
+  "📸 Counting photos & media",
+  "🌐 Testing website speed",
+  "📱 Checking mobile experience",
+  "🔍 Measuring search visibility",
+  "🏢 Scanning OTA presence",
+  "📊 Checking metasearch visibility",
+  "📈 Analyzing social media",
+];
 
 const Analyze = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const formData = location.state as { hotelName: string; city: string; state: string };
-  const [progress, setProgress] = useState(0);
-  const [showResults, setShowResults] = useState(false);
+  
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [secondsRemaining, setSecondsRemaining] = useState(30);
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [competitors, setCompetitors] = useState<CompetitorData[]>([]);
+  const [mapLoading, setMapLoading] = useState(true);
+  const [hotelCenter, setHotelCenter] = useState({ lat: 41.8781, lng: -87.6298 }); // Default Chicago
 
   useEffect(() => {
     if (!formData) {
@@ -18,146 +46,241 @@ const Analyze = () => {
       return;
     }
 
-    // Simulate analysis progress
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setTimeout(() => setShowResults(true), 300);
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 200);
+    // Fetch competitors from backend
+    const fetchCompetitors = async () => {
+      try {
+        // For now, generate mock competitor data around a central point
+        // In production, call: POST https://your-railway-app.up.railway.app/api/find-competitors
+        const mockCompetitors: CompetitorData[] = Array.from({ length: 12 }, (_, i) => ({
+          name: `Competitor Hotel ${i + 1}`,
+          lat: hotelCenter.lat + (Math.random() - 0.5) * 0.03,
+          lng: hotelCenter.lng + (Math.random() - 0.5) * 0.03,
+          rating: 3.5 + Math.random() * 1.5,
+        }));
+        
+        setTimeout(() => {
+          setCompetitors(mockCompetitors);
+          setMapLoading(false);
+        }, 1500);
+      } catch (error) {
+        console.error("Error fetching competitors:", error);
+        setMapLoading(false);
+      }
+    };
 
-    return () => clearInterval(interval);
+    fetchCompetitors();
+
+    // Scanning progress animation (3 seconds per step)
+    scanningSteps.forEach((_, index) => {
+      setTimeout(() => {
+        setCompletedSteps((prev) => [...prev, index]);
+      }, index * 3000);
+    });
+
+    // Countdown timer
+    const countdownInterval = setInterval(() => {
+      setSecondsRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(countdownInterval);
+          navigate("/results", { state: { ...formData, competitors } });
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(countdownInterval);
   }, [formData, navigate]);
 
   if (!formData) return null;
 
-  const categories = [
-    { name: "Photo Quality & Quantity", score: 72, icon: Image, color: "text-orange-500" },
-    { name: "Review Score", score: 88, icon: Star, color: "text-yellow-500" },
-    { name: "Number of Reviews", score: 65, icon: ThumbsUp, color: "text-blue-500" },
-    { name: "Response Rate", score: 45, icon: Mail, color: "text-purple-500" },
-    { name: "Recent Activity", score: 80, icon: Calendar, color: "text-green-500" },
-    { name: "Pricing Competitiveness", score: 58, icon: DollarSign, color: "text-teal-500" },
-    { name: "Amenities Listed", score: 70, icon: Wifi, color: "text-indigo-500" },
-    { name: "Search Visibility", score: 62, icon: TrendingUp, color: "text-pink-500" },
-    { name: "Booking Ease", score: 75, icon: Phone, color: "text-cyan-500" },
-    { name: "Location Information", score: 90, icon: MapPin, color: "text-red-500" },
-  ];
+  const handleNotifyMe = () => {
+    console.log("Notify:", { phone, email });
+    // In production: Send notification request to backend
+  };
 
-  const overallGrade = "B+";
-  const overallScore = Math.round(categories.reduce((acc, cat) => acc + cat.score, 0) / categories.length);
+  const mapContainerStyle = {
+    width: "100%",
+    height: "450px",
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      {/* Header */}
-      <header className="border-b border-border bg-background/95 backdrop-blur-sm">
-        <div className="container mx-auto px-4 h-16 flex items-center">
-          <Button variant="ghost" onClick={() => navigate("/")} className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Home
-          </Button>
-        </div>
-      </header>
+    <div className="min-h-screen bg-background">
+      {/* Mobile/Desktop Layout */}
+      <div className="flex flex-col lg:flex-row h-screen">
+        {/* LEFT PANEL */}
+        <div className="lg:w-[40%] bg-muted/30 p-6 lg:p-8 overflow-y-auto">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
+              Analyzing {formData.hotelName}
+            </h1>
+            <p className="text-muted-foreground">
+              {formData.city}, {formData.state}
+            </p>
+          </div>
 
-      <div className="container mx-auto px-4 py-12 max-w-5xl">
-        {!showResults ? (
-          <div className="max-w-2xl mx-auto text-center space-y-8 animate-fade-in">
-            <div className="space-y-4">
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-                Analyzing {formData.hotelName}
-              </h1>
-              <p className="text-lg text-muted-foreground">
-                {formData.city}, {formData.state}
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <Progress value={progress} className="h-3" />
-              <p className="text-sm text-muted-foreground">
-                {progress < 30 && "Scanning nearby competitors..."}
-                {progress >= 30 && progress < 60 && "Analyzing digital presence..."}
-                {progress >= 60 && progress < 90 && "Comparing with industry benchmarks..."}
-                {progress >= 90 && "Generating your report..."}
-              </p>
+          {/* Scanning Progress */}
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-foreground mb-6">
+              Analysis in Progress...
+            </h2>
+            <div className="space-y-3">
+              {scanningSteps.map((step, index) => (
+                <div
+                  key={index}
+                  className={`flex items-start gap-3 transition-all duration-500 ${
+                    completedSteps.includes(index)
+                      ? "text-green-600 dark:text-green-500"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  <div className="mt-0.5">
+                    {completedSteps.includes(index) ? (
+                      <Check className="h-5 w-5 animate-scale-in" />
+                    ) : (
+                      <div className="h-5 w-5 rounded-full border-2 border-current" />
+                    )}
+                  </div>
+                  <span className="text-sm">{step}</span>
+                </div>
+              ))}
             </div>
           </div>
-        ) : (
-          <div className="space-y-8 animate-fade-in">
-            {/* Overall Score Card */}
-            <Card className="border-2 border-primary/20 shadow-lg">
-              <CardHeader className="text-center pb-4">
-                <CardTitle className="text-2xl md:text-3xl">
-                  {formData.hotelName}
-                </CardTitle>
-                <p className="text-muted-foreground">
-                  {formData.city}, {formData.state}
-                </p>
-              </CardHeader>
-              <CardContent className="text-center space-y-6">
-                <div className="w-40 h-40 mx-auto bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center shadow-xl">
-                  <span className="text-6xl font-bold text-white">{overallGrade}</span>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-xl font-semibold text-foreground">
-                    Overall Score: {overallScore}/100
-                  </p>
-                  <p className="text-lg text-muted-foreground">
-                    Ranks #3 out of 12 nearby hotels
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
 
-            {/* Category Breakdown */}
-            <div>
-              <h2 className="text-2xl font-bold text-foreground mb-6">Category Breakdown</h2>
-              <div className="grid gap-4">
-                {categories.map((category, index) => (
-                  <Card key={index} className="animate-slide-up" style={{ animationDelay: `${index * 0.05}s` }}>
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-4 mb-3">
-                        <div className={`w-10 h-10 rounded-lg bg-muted/50 flex items-center justify-center ${category.color}`}>
-                          <category.icon className="h-5 w-5" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex justify-between items-center mb-2">
-                            <h3 className="font-semibold text-foreground">{category.name}</h3>
-                            <span className="text-lg font-bold text-foreground">{category.score}%</span>
-                          </div>
-                          <Progress value={category.score} className="h-2" />
-                        </div>
-                      </div>
-                      <p className="text-sm text-muted-foreground ml-14">
-                        {category.score >= 80 && "Excellent performance in this category"}
-                        {category.score >= 60 && category.score < 80 && "Good, but room for improvement"}
-                        {category.score < 60 && "Significant opportunity to improve here"}
-                      </p>
-                    </CardContent>
-                  </Card>
-                ))}
+          {/* Progress Indicator */}
+          <Card className="p-6 mb-6">
+            <div className="flex items-center gap-4">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <div>
+                <p className="font-semibold text-foreground">Running...</p>
+                <p className="text-sm text-muted-foreground">
+                  {secondsRemaining} seconds remaining
+                </p>
               </div>
             </div>
+          </Card>
 
-            {/* CTA Card */}
-            <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
-              <CardContent className="p-8 text-center space-y-4">
-                <h3 className="text-2xl font-bold text-foreground">
-                  Want Detailed Recommendations?
-                </h3>
-                <p className="text-muted-foreground max-w-2xl mx-auto">
-                  Get a comprehensive action plan with specific steps to improve each category and outrank your competitors.
-                </p>
-                <Button size="lg" className="bg-primary hover:bg-primary/90">
-                  Get Full Report
-                </Button>
-              </CardContent>
-            </Card>
+          <Separator className="my-6" />
+
+          {/* Bottom Section */}
+          <div className="space-y-4">
+            <p className="font-semibold text-foreground">Can't wait for results?</p>
+            <Input
+              type="tel"
+              placeholder="555-123-4567"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+            <Input
+              type="email"
+              placeholder="you@hotel.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <Button onClick={handleNotifyMe} className="w-full">
+              Text & Email Me Results
+            </Button>
+            <p className="text-xs text-muted-foreground text-center">
+              We'll send your report immediately
+            </p>
           </div>
-        )}
+        </div>
+
+        {/* RIGHT PANEL */}
+        <div className="lg:w-[60%] bg-background p-6 lg:p-8 overflow-y-auto">
+          {/* Search Bar */}
+          <Card className="p-4 mb-6 flex items-center justify-between">
+            <span className="text-sm font-medium">
+              {formData.hotelName} in {formData.city}
+            </span>
+            <Edit3 className="h-4 w-4 text-muted-foreground" />
+          </Card>
+
+          {/* Map Section */}
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold text-foreground mb-4">
+              Competitive Landscape
+            </h2>
+
+            {mapLoading ? (
+              <div className="w-full h-[450px] bg-muted animate-pulse rounded-lg flex items-center justify-center">
+                <p className="text-muted-foreground">Loading map...</p>
+              </div>
+            ) : (
+              <div className="rounded-lg overflow-hidden border border-border">
+                <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ""}>
+                  <GoogleMap
+                    mapContainerStyle={mapContainerStyle}
+                    center={hotelCenter}
+                    zoom={14}
+                    options={{
+                      disableDefaultUI: false,
+                      zoomControl: true,
+                      styles: [
+                        {
+                          featureType: "poi",
+                          elementType: "labels",
+                          stylers: [{ visibility: "off" }],
+                        },
+                      ],
+                    }}
+                  >
+                    {/* Target Hotel Marker */}
+                    <Marker
+                      position={hotelCenter}
+                      icon={{
+                        path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
+                        fillColor: "#0EA5E9",
+                        fillOpacity: 1,
+                        strokeWeight: 2,
+                        strokeColor: "#ffffff",
+                        scale: 2,
+                      }}
+                      title={formData.hotelName}
+                    />
+
+                    {/* Competitor Markers */}
+                    {competitors.map((competitor, index) => (
+                      <Marker
+                        key={index}
+                        position={{ lat: competitor.lat, lng: competitor.lng }}
+                        icon={{
+                          path: google.maps.SymbolPath.CIRCLE,
+                          fillColor: "#EF4444",
+                          fillOpacity: 0.9,
+                          strokeWeight: 2,
+                          strokeColor: "#ffffff",
+                          scale: 8,
+                        }}
+                        title={`${competitor.name} - ${competitor.rating.toFixed(1)} ★`}
+                        animation={index < 3 ? google.maps.Animation.DROP : undefined}
+                      />
+                    ))}
+                  </GoogleMap>
+                </LoadScript>
+              </div>
+            )}
+          </div>
+
+          {/* Map Legend */}
+          <Card className="p-4">
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-4">
+                <span className="flex items-center gap-2">
+                  <span className="text-lg">🏨</span> Your Hotel
+                </span>
+                <span className="text-muted-foreground">|</span>
+                <span className="flex items-center gap-2">
+                  <span className="text-lg">🔴</span> Competitors
+                </span>
+              </div>
+              <span className="text-muted-foreground">
+                Showing {competitors.length + 1} hotels within 2 miles
+              </span>
+            </div>
+          </Card>
+        </div>
       </div>
     </div>
   );
