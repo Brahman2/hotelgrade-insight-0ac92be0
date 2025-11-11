@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Check, Loader2, Edit3 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
 
 interface CompetitorData {
@@ -48,6 +48,7 @@ const Analyze = () => {
   const [apiError, setApiError] = useState<string>("");
   const [hotelCenter, setHotelCenter] = useState({ lat: 0, lng: 0 });
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+  const hasNavigated = useRef(false);
 
   useEffect(() => {
     if (!formData) {
@@ -168,7 +169,8 @@ const Analyze = () => {
 
   // Separate useEffect to handle navigation when countdown reaches 0
   useEffect(() => {
-    if (secondsRemaining === 0) {
+    if (secondsRemaining === 0 && !hasNavigated.current) {
+      hasNavigated.current = true;
       navigate("/results", {
         state: {
           ...formData,
