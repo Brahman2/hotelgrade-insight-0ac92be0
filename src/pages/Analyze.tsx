@@ -50,7 +50,13 @@ const Analyze = () => {
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
   const hasNavigated = useRef(false);
 
+  console.log('🚀 Analyze component rendered');
+  console.log('📋 Form data:', formData);
+  console.log('🗺️ isScriptLoaded:', isScriptLoaded);
+
   useEffect(() => {
+    console.log('🔄 useEffect triggered');
+    console.log('✅ Condition check - isScriptLoaded:', isScriptLoaded);
     if (!formData) {
       navigate("/");
       return;
@@ -62,6 +68,7 @@ const Analyze = () => {
       city: formData.city, 
       state: formData.state 
     });
+    console.log('🔍 About to define fetchCompetitorsAndGeocode function');
 
     // Fetch competitors from API
     const fetchCompetitorsAndGeocode = async () => {
@@ -72,10 +79,12 @@ const Analyze = () => {
           city: formData.city,
           state: formData.state
         });
+        console.log('⏰ About to make fetch call NOW');
         setMapLoading(true);
         setApiError("");
         
         // Call the API to get target hotel and competitors
+        console.log('🌐 Making fetch request to:', 'https://web-production-13e22.up.railway.app/api/find-competitors');
         const response = await fetch('https://web-production-13e22.up.railway.app/api/find-competitors', {
           method: 'POST',
           headers: {
@@ -95,6 +104,7 @@ const Analyze = () => {
         }
 
         const data = await response.json();
+        console.log('✅ API call completed successfully!');
         console.log('✅ Full API Response:', data);
         console.log('🏨 Target hotel data:', data.target);
         console.log('🔴 Competitors array:', data.competitors);
@@ -140,7 +150,9 @@ const Analyze = () => {
     };
 
     // Wait for Google Maps to load before fetching
+    console.log('🔍 Checking if should fetch - isScriptLoaded:', isScriptLoaded);
     if (isScriptLoaded) {
+      console.log('✅ Google Maps loaded! Calling fetchCompetitorsAndGeocode...');
       fetchCompetitorsAndGeocode();
     } else {
       console.log('⏳ Waiting for Google Maps to load...');
