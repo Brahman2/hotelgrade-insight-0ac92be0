@@ -191,9 +191,7 @@ export default function ResultsTeaser() {
                     score={metric.score || 0}
                     status={metric.color === 'green' ? 'good' : metric.color === 'amber' ? 'warning' : 'critical'}
                     insight={metric.insight || ''}
-                    recommendation={metric.recommendation || ''}
                     isLocked={metric.isLocked || false}
-                    onUnlock={() => handleUnlockSection("digitalPresence")}
                   />
                 ))}
               </div>
@@ -234,9 +232,7 @@ export default function ResultsTeaser() {
                     score={metric.score || 0}
                     status={metric.color === 'green' ? 'good' : metric.color === 'amber' ? 'warning' : 'critical'}
                     insight={metric.insight || ''}
-                    recommendation={metric.recommendation || ''}
                     isLocked={metric.isLocked || false}
-                    onUnlock={() => handleUnlockSection("reputation")}
                   />
                 ))}
               </div>
@@ -277,9 +273,7 @@ export default function ResultsTeaser() {
                     score={metric.score || 0}
                     status={metric.color === 'green' ? 'good' : metric.color === 'amber' ? 'warning' : 'critical'}
                     insight={metric.insight || ''}
-                    recommendation={metric.recommendation || ''}
                     isLocked={metric.isLocked || false}
-                    onUnlock={() => handleUnlockSection("socialMedia")}
                   />
                 ))}
               </div>
