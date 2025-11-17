@@ -1,3 +1,4 @@
+import ExecutiveSummary from "@/components/ExecutiveSummary";
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
@@ -30,7 +31,7 @@ const Analyze = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const formData = location.state || { hotelName: "Grand Plaza Hotel", city: "Chicago", state: "Illinois" };
-  
+
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [unlockedSections, setUnlockedSections] = useState<string[]>([]);
   const [isAllUnlocked, setIsAllUnlocked] = useState(false);
@@ -59,14 +60,7 @@ const Analyze = () => {
   const handleEmailSubmit = async (email: string) => {
     setUserEmail(email);
     setIsAllUnlocked(true);
-    setUnlockedSections([
-      "google_business",
-      "reviews",
-      "website",
-      "ota",
-      "social",
-      "competitive",
-    ]);
+    setUnlockedSections(["google_business", "reviews", "website", "ota", "social", "competitive"]);
     setShowEmailModal(false);
   };
 
@@ -143,12 +137,8 @@ const Analyze = () => {
       <section className="pt-12 pb-8 px-4 bg-gradient-to-r from-primary/10 to-secondary/10">
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-4">
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-              Performance Audit Results
-            </h1>
-            <p className="text-xl text-muted-foreground">
-              {auditData.hotelName}
-            </p>
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">Performance Audit Results</h1>
+            <p className="text-xl text-muted-foreground">{auditData.hotelName}</p>
             <p className="text-muted-foreground">
               {auditData.city}, {auditData.state}
             </p>
@@ -160,10 +150,7 @@ const Analyze = () => {
       <div className="container mx-auto max-w-7xl px-4 py-8">
         {/* Progress Section - shows until analysis complete */}
         <div className="mb-8">
-          <ProgressSection 
-            isComplete={analysisComplete} 
-            competitorCount={competitorCount}
-          />
+          <ProgressSection isComplete={analysisComplete} competitorCount={competitorCount} />
         </div>
 
         {/* Competitor Map - always visible, loads after progress */}
@@ -175,22 +162,14 @@ const Analyze = () => {
                   <MapPin className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-foreground">
-                    Competitive Landscape
-                  </h2>
-                  <p className="text-muted-foreground mt-1">
-                    Your hotel and nearby competitors within 2 miles
-                  </p>
+                  <h2 className="text-2xl font-bold text-foreground">Competitive Landscape</h2>
+                  <p className="text-muted-foreground mt-1">Your hotel and nearby competitors within 2 miles</p>
                 </div>
               </div>
             </div>
             <div className="p-6">
               {analysisComplete ? (
-                <CompetitorMap
-                  hotelName={auditData.hotelName}
-                  city={auditData.city}
-                  state={auditData.state}
-                />
+                <CompetitorMap hotelName={auditData.hotelName} city={auditData.city} state={auditData.state} />
               ) : (
                 <div className="flex items-center justify-center py-20">
                   <div className="text-center">
@@ -208,24 +187,30 @@ const Analyze = () => {
           <div className="mb-8 animate-fade-in">
             <Card className="bg-gradient-to-r from-primary to-secondary text-primary-foreground p-8 shadow-xl border-0">
               <div className="text-center">
-                <p className="text-primary-foreground/80 text-sm font-medium mb-4">
-                  OVERALL PERFORMANCE SCORE
-                </p>
+                <p className="text-primary-foreground/80 text-sm font-medium mb-4">OVERALL PERFORMANCE SCORE</p>
                 <div className="flex justify-center mb-4">
-                  <ScoreGauge 
+                  <ScoreGauge
                     grade={auditData.executiveSummary.overallGrade}
-                    score={auditData.executiveSummary.overallScore} 
-                    size="xl" 
+                    score={auditData.executiveSummary.overallScore}
+                    size="xl"
                   />
                 </div>
-                <div className="text-5xl font-bold mb-2">
-                  {auditData.executiveSummary.overallGrade}
-                </div>
-                <p className="text-primary-foreground/80">
-                  {auditData.executiveSummary.overallScore}/100 points
-                </p>
+                <div className="text-5xl font-bold mb-2">{auditData.executiveSummary.overallGrade}</div>
+                <p className="text-primary-foreground/80">{auditData.executiveSummary.overallScore}/100 points</p>
               </div>
             </Card>
+            {/* NEW: Executive Summary - Add this section */}
+            <ExecutiveSummary
+              overallScore={MOCK_AUDIT_REPORT.executiveSummary.overallScore}
+              overallGrade={MOCK_AUDIT_REPORT.executiveSummary.overallGrade}
+              competitiveRank={MOCK_AUDIT_REPORT.executiveSummary.competitiveRank}
+              competitiveTotal={MOCK_AUDIT_REPORT.executiveSummary.competitiveTotal}
+              strengths={MOCK_AUDIT_REPORT.executiveSummary.strengths}
+              criticalIssues={MOCK_AUDIT_REPORT.executiveSummary.criticalIssues}
+              keyFinding={MOCK_AUDIT_REPORT.executiveSummary.keyFinding}
+            />
+
+            {/* Rest of your sections... */}
           </div>
         )}
 
@@ -238,9 +223,7 @@ const Analyze = () => {
                   <Unlock className="w-8 h-8" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold mb-1">
-                    Unlock Your Complete Analysis
-                  </h3>
+                  <h3 className="text-xl font-bold mb-1">Unlock Your Complete Analysis</h3>
                   <p className="text-primary-foreground/80">
                     Get instant access to all {sections.length} sections with detailed insights
                   </p>
@@ -277,17 +260,23 @@ const Analyze = () => {
                           <Icon className="w-6 h-6 text-primary" />
                         </div>
                         <div>
-                          <h2 className="text-2xl font-bold text-foreground">
-                            {section.title}
-                          </h2>
+                          <h2 className="text-2xl font-bold text-foreground">{section.title}</h2>
                           <p className="text-muted-foreground mt-1">{section.description}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <ScoreGauge 
-                          grade={section.data.score >= 90 ? 'A' : section.data.score >= 80 ? 'B' : section.data.score >= 70 ? 'C' : 'D'} 
-                          score={section.data.score || 0} 
-                          size="sm" 
+                        <ScoreGauge
+                          grade={
+                            section.data.score >= 90
+                              ? "A"
+                              : section.data.score >= 80
+                                ? "B"
+                                : section.data.score >= 70
+                                  ? "C"
+                                  : "D"
+                          }
+                          score={section.data.score || 0}
+                          size="sm"
                         />
                         {isUnlocked ? (
                           <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium flex items-center gap-1">
@@ -308,18 +297,16 @@ const Analyze = () => {
                   <div className="p-6">
                     {/* Preview (first 2-3 metrics) */}
                     <div className="grid md:grid-cols-2 gap-4 mb-6">
-                      {section.data.metrics
-                        .slice(0, showPreview ? 3 : undefined)
-                        .map((metric, idx) => (
-                          <MetricCard
-                            key={idx}
-                            metric={{
-                              ...metric,
-                              isLocked: showPreview && idx >= 2
-                            }}
-                            onUnlockClick={() => setShowEmailModal(true)}
-                          />
-                        ))}
+                      {section.data.metrics.slice(0, showPreview ? 3 : undefined).map((metric, idx) => (
+                        <MetricCard
+                          key={idx}
+                          metric={{
+                            ...metric,
+                            isLocked: showPreview && idx >= 2,
+                          }}
+                          onUnlockClick={() => setShowEmailModal(true)}
+                        />
+                      ))}
                     </div>
 
                     {/* Locked Overlay / Unlock Button */}
@@ -335,10 +322,7 @@ const Analyze = () => {
                             <p className="text-muted-foreground mb-4">
                               Unlock to see detailed analysis and recommendations
                             </p>
-                            <Button
-                              onClick={() => setShowEmailModal(true)}
-                              className="bg-primary hover:bg-primary/90"
-                            >
+                            <Button onClick={() => setShowEmailModal(true)} className="bg-primary hover:bg-primary/90">
                               <Mail className="w-4 h-4 mr-2" />
                               Unlock This Section
                             </Button>
@@ -357,12 +341,14 @@ const Analyze = () => {
                             Key Findings
                           </h3>
                           <ul className="space-y-2">
-                            {section.data.metrics.filter(m => m.insight).map((metric, idx) => (
-                              <li key={idx} className="flex items-start gap-2">
-                                <ArrowRight className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
-                                <span className="text-foreground">{metric.insight}</span>
-                              </li>
-                            ))}
+                            {section.data.metrics
+                              .filter((m) => m.insight)
+                              .map((metric, idx) => (
+                                <li key={idx} className="flex items-start gap-2">
+                                  <ArrowRight className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
+                                  <span className="text-foreground">{metric.insight}</span>
+                                </li>
+                              ))}
                           </ul>
                         </div>
 
@@ -373,12 +359,14 @@ const Analyze = () => {
                             Priority Actions
                           </h3>
                           <ul className="space-y-2">
-                            {section.data.metrics.filter(m => m.recommendation).map((metric, idx) => (
-                              <li key={idx} className="flex items-start gap-2">
-                                <CheckCircle className="w-4 h-4 text-green-600 mt-1 flex-shrink-0" />
-                                <span className="text-foreground">{metric.recommendation}</span>
-                              </li>
-                            ))}
+                            {section.data.metrics
+                              .filter((m) => m.recommendation)
+                              .map((metric, idx) => (
+                                <li key={idx} className="flex items-start gap-2">
+                                  <CheckCircle className="w-4 h-4 text-green-600 mt-1 flex-shrink-0" />
+                                  <span className="text-foreground">{metric.recommendation}</span>
+                                </li>
+                              ))}
                           </ul>
                         </div>
                       </div>
@@ -394,9 +382,7 @@ const Analyze = () => {
         {analysisComplete && !isAllUnlocked && (
           <Card className="mt-12 bg-gradient-to-r from-primary to-secondary text-primary-foreground p-8 shadow-xl border-0 animate-fade-in">
             <div className="text-center max-w-2xl mx-auto">
-              <h2 className="text-3xl font-bold mb-4">
-                Ready for Your Complete Analysis?
-              </h2>
+              <h2 className="text-3xl font-bold mb-4">Ready for Your Complete Analysis?</h2>
               <p className="text-xl text-primary-foreground/80 mb-6">
                 Unlock all {sections.length} sections and get your full 40-point performance audit
               </p>
