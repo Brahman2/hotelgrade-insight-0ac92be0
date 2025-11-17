@@ -131,6 +131,7 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
         <LoadScript 
           googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ""}
           onLoad={() => setIsScriptLoaded(true)}
+          onError={() => setError("Google Maps failed to load. Please verify your API key, billing, and referrer restrictions.")}
         >
           <GoogleMap
             mapContainerStyle={mapContainerStyle}
@@ -144,7 +145,7 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
             }}
           >
             {/* 2-mile radius circle */}
-            {target && <Circle center={center} options={circleOptions} />}
+            {target && isScriptLoaded && <Circle center={center} options={circleOptions} />}
 
             {/* Target hotel marker (blue) */}
             {target && isScriptLoaded && (
