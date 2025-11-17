@@ -207,6 +207,7 @@ const Analyze = () => {
               competitiveTotal={MOCK_AUDIT_REPORT.executiveSummary.competitiveTotal}
               strengths={MOCK_AUDIT_REPORT.executiveSummary.strengths}
               criticalIssues={MOCK_AUDIT_REPORT.executiveSummary.criticalIssues}
+              quickWins={MOCK_AUDIT_REPORT.executiveSummary.quickWins}
               keyFinding={MOCK_AUDIT_REPORT.executiveSummary.keyFinding}
             />
 
