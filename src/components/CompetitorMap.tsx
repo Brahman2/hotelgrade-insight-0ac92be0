@@ -34,7 +34,6 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
   const [target, setTarget] = useState<TargetHotel | null>(null);
   const [competitors, setCompetitors] = useState<Competitor[]>([]);
   const [selectedCompetitor, setSelectedCompetitor] = useState<Competitor | null>(null);
-  const [isScriptLoaded, setIsScriptLoaded] = useState(false);
 
   // Your Railway backend URL
   const BACKEND_URL = "https://web-production-13e22.up.railway.app";
@@ -128,11 +127,7 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
     <div className="space-y-4">
       {/* Map Container */}
       <Card className="overflow-hidden">
-        <LoadScript 
-          googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ""}
-          onLoad={() => setIsScriptLoaded(true)}
-          onError={() => setError("Google Maps failed to load. Please verify your API key, billing, and referrer restrictions.")}
-        >
+        <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ""}>
           <GoogleMap
             mapContainerStyle={mapContainerStyle}
             center={center}
@@ -145,40 +140,32 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
             }}
           >
             {/* 2-mile radius circle */}
-            {target && isScriptLoaded && <Circle center={center} options={circleOptions} />}
+            {target && <Circle center={center} options={circleOptions} />}
 
             {/* Target hotel marker (blue) */}
-            {target && isScriptLoaded && (
+            {target && (
               <Marker
                 position={{ lat: target.lat, lng: target.lng }}
-                icon={
-                  (isScriptLoaded && (window as any).google?.maps?.Size)
-                    ? {
-                        url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-                        scaledSize: new (window as any).google.maps.Size(40, 40),
-                      }
-                    : { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
-                }
+                icon={{
+                  url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+                  scaledSize: new google.maps.Size(40, 40),
+                }}
                 title={target.name}
               />
             )}
 
             {/* Competitor markers (red) */}
-            {isScriptLoaded && competitors.map((competitor, index) => (
+            {competitors.map((competitor, index) => (
               <Marker
                 key={competitor.place_id || index}
                 position={{ lat: competitor.lat, lng: competitor.lng }}
-                icon={
-                  (isScriptLoaded && (window as any).google?.maps?.Size)
-                    ? {
-                        url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-                        scaledSize: new (window as any).google.maps.Size(
-                          competitor.rating >= 4.5 ? 40 : competitor.rating >= 4.0 ? 35 : 30,
-                          competitor.rating >= 4.5 ? 40 : competitor.rating >= 4.0 ? 35 : 30
-                        ),
-                      }
-                    : { url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png" }
-                }
+                icon={{
+                  url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                  scaledSize: new google.maps.Size(
+                    competitor.rating >= 4.5 ? 40 : competitor.rating >= 4.0 ? 35 : 30,
+                    competitor.rating >= 4.5 ? 40 : competitor.rating >= 4.0 ? 35 : 30
+                  ),
+                }}
                 title={competitor.name}
                 onClick={() => setSelectedCompetitor(competitor)}
               />
