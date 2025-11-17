@@ -20,12 +20,12 @@ interface MetricCardProps {
 const MetricCard: React.FC<MetricCardProps> = ({
   title,
   score,
-  status = 'good',
+  status,
   insight,
   isLocked = false
 }) => {
-  // Determine status from score if not provided
-  const actualStatus = status || (score >= 75 ? 'good' : score >= 50 ? 'warning' : 'critical');
+  // Calculate status from score (prioritize calculated status over passed status)
+  const actualStatus = score >= 75 ? 'good' : score >= 50 ? 'warning' : 'critical';
 
   // Colors based on status
   const statusColors = {
