@@ -195,8 +195,6 @@ const Analyze = () => {
                     size="xl"
                   />
                 </div>
-                <div className="text-5xl font-bold mb-2">{auditData.executiveSummary.overallGrade}</div>
-                <p className="text-primary-foreground/80">{auditData.executiveSummary.overallScore}/100 points</p>
               </div>
             </Card>
             {/* NEW: Executive Summary - Add this section */}
