@@ -299,11 +299,13 @@ const Analyze = () => {
                       {section.data.metrics.slice(0, showPreview ? 3 : undefined).map((metric, idx) => (
                         <MetricCard
                           key={idx}
-                          metric={{
-                            ...metric,
-                            isLocked: showPreview && idx >= 2,
-                          }}
-                          onUnlockClick={() => setShowEmailModal(true)}
+                          title={metric.label}
+                          score={metric.score || 0}
+                          status={metric.color === 'green' ? 'good' : metric.color === 'amber' ? 'warning' : 'critical'}
+                          insight={metric.insight || ''}
+                          recommendation={metric.recommendation || ''}
+                          isLocked={showPreview && idx >= 2}
+                          onUnlock={() => setShowEmailModal(true)}
                         />
                       ))}
                     </div>

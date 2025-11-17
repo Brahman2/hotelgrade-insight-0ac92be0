@@ -187,8 +187,13 @@ export default function ResultsTeaser() {
                 {report.digitalPresence.metrics.slice(0, 3).map((metric, i) => (
                   <MetricCard
                     key={i}
-                    metric={metric}
-                    onUnlockClick={() => handleUnlockSection("digitalPresence")}
+                    title={metric.label}
+                    score={metric.score || 0}
+                    status={metric.color === 'green' ? 'good' : metric.color === 'amber' ? 'warning' : 'critical'}
+                    insight={metric.insight || ''}
+                    recommendation={metric.recommendation || ''}
+                    isLocked={metric.isLocked || false}
+                    onUnlock={() => handleUnlockSection("digitalPresence")}
                   />
                 ))}
               </div>
@@ -225,8 +230,13 @@ export default function ResultsTeaser() {
                 {report.reputation.metrics.slice(0, 3).map((metric, i) => (
                   <MetricCard
                     key={i}
-                    metric={metric}
-                    onUnlockClick={() => handleUnlockSection("reputation")}
+                    title={metric.label}
+                    score={metric.score || 0}
+                    status={metric.color === 'green' ? 'good' : metric.color === 'amber' ? 'warning' : 'critical'}
+                    insight={metric.insight || ''}
+                    recommendation={metric.recommendation || ''}
+                    isLocked={metric.isLocked || false}
+                    onUnlock={() => handleUnlockSection("reputation")}
                   />
                 ))}
               </div>
@@ -263,8 +273,13 @@ export default function ResultsTeaser() {
                 {report.socialMedia.metrics.slice(0, 2).map((metric, i) => (
                   <MetricCard
                     key={i}
-                    metric={metric}
-                    onUnlockClick={() => handleUnlockSection("socialMedia")}
+                    title={metric.label}
+                    score={metric.score || 0}
+                    status={metric.color === 'green' ? 'good' : metric.color === 'amber' ? 'warning' : 'critical'}
+                    insight={metric.insight || ''}
+                    recommendation={metric.recommendation || ''}
+                    isLocked={metric.isLocked || false}
+                    onUnlock={() => handleUnlockSection("socialMedia")}
                   />
                 ))}
               </div>
