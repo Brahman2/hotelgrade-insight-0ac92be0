@@ -10,10 +10,14 @@ export interface MetricDetail {
   score: number | null; // 0-100, null if locked
   color: ScoreColor;
   label: string;
+  title?: string;
   value?: string | number;
   isLocked?: boolean;
   insight?: string;
   recommendation?: string;
+  detailedAnalysis?: string;
+  actionSteps?: string[];
+  expectedImpact?: string;
 }
 
 export interface CompetitorData {
