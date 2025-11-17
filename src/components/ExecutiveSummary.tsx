@@ -9,6 +9,7 @@ interface ExecutiveSummaryProps {
   competitiveTotal: number;
   strengths: string[];
   criticalIssues: string[];
+  quickWins?: string[];  // Optional in case you don't have it yet
   keyFinding: string;
 }
 
@@ -19,6 +20,7 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
   competitiveTotal,
   strengths,
   criticalIssues,
+  quickWins = [],  // Default to empty array if not provided
   keyFinding
 }) => {
   // Determine grade color based on score
@@ -84,8 +86,8 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
         </div>
       </Card>
 
-      {/* Summary Grid - Only Strengths & Issues */}
-      <div className="grid md:grid-cols-2 gap-6">
+      {/* Summary Grid - 3 Columns */}
+      <div className="grid md:grid-cols-3 gap-6">
         {/* Top Strengths */}
         <Card className="border-2 border-green-200 bg-green-50/50">
           <div className="p-6">
@@ -135,7 +137,53 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
             </ul>
           </div>
         </Card>
+
+        {/* Quick Wins */}
+        {quickWins.length > 0 && (
+          <Card className="border-2 border-amber-200 bg-amber-50/50">
+            <div className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center">
+                  <Zap className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-amber-900">
+                  Quick Wins
+                </h3>
+              </div>
+              
+              <ul className="space-y-3">
+                {quickWins.map((win, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <Zap className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-amber-800 leading-relaxed">
+                      {win}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </Card>
+        )}
       </div>
+
+      {/* 30-Day Priority Action Banner - Only show if we have quick wins */}
+      {quickWins.length > 0 && (
+        <Card className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+          <div className="p-6">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Zap className="w-7 h-7 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold mb-1">30-Day Priority Action</h3>
+                <p className="text-blue-100 text-sm">
+                  Focus on the quick wins above for immediate impact. These improvements require minimal effort but can significantly boost your performance within the next month.
+                </p>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
     </div>
   );
 };
