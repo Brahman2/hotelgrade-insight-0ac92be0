@@ -183,7 +183,9 @@ export const CompetitorMap = ({ hotelName, city, state, googleMapsApiKey }: Comp
                 position={{ lat: target.lat, lng: target.lng }}
                 icon={{
                   url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-                  scaledSize: new google.maps.Size(40, 40),
+                  scaledSize: (typeof window !== 'undefined' && (window as any).google)
+                    ? new (window as any).google.maps.Size(40, 40)
+                    : undefined,
                 }}
                 title={target.name}
               />
@@ -196,10 +198,12 @@ export const CompetitorMap = ({ hotelName, city, state, googleMapsApiKey }: Comp
                 position={{ lat: competitor.lat, lng: competitor.lng }}
                 icon={{
                   url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-                  scaledSize: new google.maps.Size(
-                    competitor.rating >= 4.5 ? 40 : competitor.rating >= 4.0 ? 35 : 30,
-                    competitor.rating >= 4.5 ? 40 : competitor.rating >= 4.0 ? 35 : 30
-                  ),
+                  scaledSize: (typeof window !== 'undefined' && (window as any).google)
+                    ? new (window as any).google.maps.Size(
+                        competitor.rating >= 4.5 ? 40 : competitor.rating >= 4.0 ? 35 : 30,
+                        competitor.rating >= 4.5 ? 40 : competitor.rating >= 4.0 ? 35 : 30
+                      )
+                    : undefined,
                 }}
                 title={competitor.name}
                 onClick={() => setSelectedCompetitor(competitor)}
