@@ -298,10 +298,14 @@ const Analyze = () => {
                       {section.data.metrics.map((metric, idx) => (
                         <MetricCard
                           key={idx}
-                          title={metric.label}
+                          title={metric.title || metric.label}
                           score={metric.score}
                           insight={metric.insight}
                           isLocked={!isUnlocked && idx >= 2}
+                          recommendation={metric.recommendation}
+                          detailedAnalysis={metric.detailedAnalysis}
+                          actionSteps={metric.actionSteps}
+                          expectedImpact={metric.expectedImpact}
                         />
                       ))}
                     </div>
