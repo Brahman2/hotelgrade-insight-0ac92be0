@@ -40,29 +40,19 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Overall Grade Card */}
+      {/* Executive Summary Header - Simplified (grade shown above) */}
       <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200">
-        <div className="p-8">
+        <div className="p-6">
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
                 Executive Summary
               </h2>
-              <p className="text-gray-600">
-                Overall Performance Assessment
+              <p className="text-gray-600 mb-1">
+                Competitive Performance Analysis
               </p>
-              <p className="text-sm text-gray-500 mt-2">
-                Ranked #{competitiveRank} of {competitiveTotal} comparable properties
-              </p>
-            </div>
-            
-            {/* Grade Badge */}
-            <div className="flex flex-col items-center">
-              <div className={`w-24 h-24 ${getGradeColor()} rounded-full flex items-center justify-center shadow-lg`}>
-                <span className="text-4xl font-bold text-white">{overallGrade}</span>
-              </div>
-              <p className={`text-sm font-semibold mt-2 ${getGradeTextColor()}`}>
-                {overallScore}/100
+              <p className="text-sm text-gray-500">
+                Ranked #{competitiveRank} of {competitiveTotal} comparable properties in your market
               </p>
             </div>
           </div>
