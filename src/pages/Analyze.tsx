@@ -190,27 +190,28 @@ const Analyze = () => {
               <div className="text-center">
                 <p className="text-primary-foreground/80 text-sm font-medium mb-4">OVERALL PERFORMANCE SCORE</p>
                 <div className="flex justify-center mb-4">
-                  <ScoreGauge
-                    grade={auditData.executiveSummary.overallGrade}
-                    score={auditData.executiveSummary.overallScore}
-                    size="xl"
-                  />
+                  <ScoreGauge grade={auditData.executiveSummary.overallGrade} score={auditData.executiveSummary.overallScore} size="lg" />
                 </div>
+                <div className="text-6xl font-bold mb-2">{auditData.executiveSummary.overallGrade}</div>
+                <p className="text-primary-foreground/80">{auditData.executiveSummary.overallScore}/100 points</p>
               </div>
             </Card>
-            {/* NEW: Executive Summary - Add this section */}
-            <ExecutiveSummary
-              overallScore={MOCK_AUDIT_REPORT.executiveSummary.overallScore}
-              overallGrade={MOCK_AUDIT_REPORT.executiveSummary.overallGrade}
-              competitiveRank={MOCK_AUDIT_REPORT.executiveSummary.competitiveRank}
-              competitiveTotal={MOCK_AUDIT_REPORT.executiveSummary.competitiveTotal}
-              strengths={MOCK_AUDIT_REPORT.executiveSummary.strengths}
-              criticalIssues={MOCK_AUDIT_REPORT.executiveSummary.criticalIssues}
-              quickWins={MOCK_AUDIT_REPORT.executiveSummary.quickWins}
-              keyFinding={MOCK_AUDIT_REPORT.executiveSummary.keyFinding}
-            />
+          </div>
+        )}
 
-            {/* Rest of your sections... */}
+        {/* Executive Summary - shows after analysis complete */}
+        {analysisComplete && (
+          <div className="mb-8 animate-fade-in">
+            <ExecutiveSummary
+              overallScore={auditData.executiveSummary.overallScore}
+              overallGrade={auditData.executiveSummary.overallGrade}
+              competitiveRank={auditData.executiveSummary.competitiveRank}
+              competitiveTotal={auditData.executiveSummary.competitiveTotal}
+              strengths={auditData.executiveSummary.strengths}
+              criticalIssues={auditData.executiveSummary.criticalIssues}
+              quickWins={auditData.executiveSummary.quickWins}
+              keyFinding={auditData.executiveSummary.keyFinding}
+            />
           </div>
         )}
 
@@ -224,9 +225,7 @@ const Analyze = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-bold mb-1">Unlock Your Complete Analysis</h3>
-                  <p className="text-primary-foreground/80">
-                    Get instant access to all {sections.length} sections with detailed insights
-                  </p>
+                  <p className="text-primary-foreground/80">Get instant access to all {sections.length} sections with detailed insights</p>
                 </div>
               </div>
               <Button
@@ -248,7 +247,6 @@ const Analyze = () => {
             {sections.map((section) => {
               const Icon = sectionIcons[section.id as keyof typeof sectionIcons];
               const isUnlocked = isAllUnlocked || unlockedSections.includes(section.id);
-              const showPreview = !isUnlocked;
 
               return (
                 <Card key={section.id} className="overflow-hidden border border-border shadow-lg">
@@ -293,53 +291,28 @@ const Analyze = () => {
                     </div>
                   </div>
 
-                  {/* Section Content */}
+                  {/* Section Content - VERSION C */}
                   <div className="p-6">
+                    {/* Metric Grid */}
                     <div className="grid md:grid-cols-2 gap-4">
                       {section.data.metrics.map((metric, idx) => (
                         <MetricCard
                           key={idx}
-                          title={metric.title}
+                          title={metric.label}
                           score={metric.score}
                           insight={metric.insight}
                           isLocked={!isUnlocked && idx >= 2}
                         />
                       ))}
                     </div>
-                  
+
+                    {/* Unlock Banner - shows when section is locked */}
                     {!isUnlocked && (
                       <UnlockBanner
                         sectionTitle={section.title}
                         lockedCount={section.data.metrics.length - 2}
                         onUnlock={() => setShowEmailModal(true)}
                       />
-                    )}
-                  
-                    {isUnlocked && (
-                      {/* Keep existing Key Findings & Recommendations code */}
-                    )}
-                    </div>
-
-                    {/* Locked Overlay / Unlock Button */}
-                    {showPreview && (
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background to-background z-10 -mt-20"></div>
-                        <div className="relative z-20 pt-8 text-center">
-                          <div className="bg-card/80 backdrop-blur-sm rounded-lg p-6 inline-block border border-border shadow-lg">
-                            <Lock className="w-12 h-12 text-primary mx-auto mb-4" />
-                            <h3 className="text-xl font-bold mb-2">
-                              {section.data.metrics.length - 3} More Insights Locked
-                            </h3>
-                            <p className="text-muted-foreground mb-4">
-                              Unlock to see detailed analysis and recommendations
-                            </p>
-                            <Button onClick={() => setShowEmailModal(true)} className="bg-primary hover:bg-primary/90">
-                              <Mail className="w-4 h-4 mr-2" />
-                              Unlock This Section
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
                     )}
 
                     {/* Full Content (when unlocked) */}
