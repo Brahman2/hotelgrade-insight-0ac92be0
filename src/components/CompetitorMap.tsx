@@ -109,7 +109,7 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
   };
 
   // Check if API key is configured
-  if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === "YOUR_API_KEY_HERE") {
+  if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY.length === 0) {
     return (
       <Card className="p-8 bg-yellow-50 border-yellow-200">
         <h3 className="font-semibold text-yellow-800 mb-2">⚠️ Google Maps API Key Required</h3>

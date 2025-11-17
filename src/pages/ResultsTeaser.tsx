@@ -4,7 +4,7 @@
 
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { MetricCard } from "@/components/audit/MetricCard";
+import MetricCard from "@/components/audit/MetricCard";
 import { ScoreGauge, ProgressRing } from "@/components/audit/ScoreGauge";
 import { EmailCaptureModal } from "@/components/audit/EmailCaptureModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

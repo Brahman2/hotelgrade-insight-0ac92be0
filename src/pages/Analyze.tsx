@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScoreGauge } from "@/components/audit/ScoreGauge";
-import { MetricCard } from "@/components/audit/MetricCard";
+import MetricCard from "@/components/audit/MetricCard";
 import { EmailCaptureModal } from "@/components/audit/EmailCaptureModal";
 import { CompetitorMap } from "@/components/CompetitorMap";
 import { ProgressSection } from "@/components/ProgressSection";
