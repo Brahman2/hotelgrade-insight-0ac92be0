@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { GoogleMap, LoadScript, Marker, Circle } from "@react-google-maps/api";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { MapPin, Star, Navigation } from "lucide-react";
 
 interface Competitor {
@@ -28,18 +26,14 @@ interface CompetitorMapProps {
   hotelName: string;
   city: string;
   state: string;
-  googleMapsApiKey?: string;
 }
 
-export const CompetitorMap = ({ hotelName, city, state, googleMapsApiKey }: CompetitorMapProps) => {
+export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [target, setTarget] = useState<TargetHotel | null>(null);
   const [competitors, setCompetitors] = useState<Competitor[]>([]);
   const [selectedCompetitor, setSelectedCompetitor] = useState<Competitor | null>(null);
-  const [mapsLoaded, setMapsLoaded] = useState(false);
-  const [userApiKey, setUserApiKey] = useState<string>(() => localStorage.getItem("gmaps_api_key") || "");
-  const apiKey = googleMapsApiKey || (import.meta as any).env?.VITE_GOOGLE_MAPS_API_KEY || userApiKey;
 
   // Your Railway backend URL
   const BACKEND_URL = "https://web-production-13e22.up.railway.app";
@@ -129,40 +123,11 @@ export const CompetitorMap = ({ hotelName, city, state, googleMapsApiKey }: Comp
     );
   }
 
-  // If no API key present, show helper UI to paste a temporary public key
-  if (!apiKey) {
-    return (
-      <Card className="p-6">
-        <h3 className="font-semibold mb-2">Google Maps API key required</h3>
-        <p className="text-sm text-muted-foreground mb-4">
-          Add a valid Maps JavaScript API key. Make sure billing is enabled and allow HTTP referrers for
-          localhost:5173 and *.lovableproject.com.
-        </p>
-        <div className="flex gap-2">
-          <Input
-            placeholder="Paste your Google Maps API key"
-            value={userApiKey}
-            onChange={(e) => {
-              const v = e.target.value;
-              setUserApiKey(v);
-              localStorage.setItem("gmaps_api_key", v);
-            }}
-          />
-          <Button onClick={() => setUserApiKey(userApiKey)}>Use key</Button>
-        </div>
-      </Card>
-    );
-  }
-
   return (
     <div className="space-y-4">
       {/* Map Container */}
       <Card className="overflow-hidden">
-        <LoadScript 
-          googleMapsApiKey={apiKey}
-          onLoad={() => setMapsLoaded(true)}
-          onError={() => setError("Google Maps failed to load. Verify API key, billing, and HTTP referrer restrictions.")}
-        >
+        <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ""}>
           <GoogleMap
             mapContainerStyle={mapContainerStyle}
             center={center}
@@ -178,32 +143,28 @@ export const CompetitorMap = ({ hotelName, city, state, googleMapsApiKey }: Comp
             {target && <Circle center={center} options={circleOptions} />}
 
             {/* Target hotel marker (blue) */}
-            {target && mapsLoaded && (
+            {target && (
               <Marker
                 position={{ lat: target.lat, lng: target.lng }}
                 icon={{
                   url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-                  scaledSize: (typeof window !== 'undefined' && (window as any).google)
-                    ? new (window as any).google.maps.Size(40, 40)
-                    : undefined,
+                  scaledSize: new google.maps.Size(40, 40),
                 }}
                 title={target.name}
               />
             )}
 
             {/* Competitor markers (red) */}
-            {mapsLoaded && competitors.map((competitor, index) => (
+            {competitors.map((competitor, index) => (
               <Marker
                 key={competitor.place_id || index}
                 position={{ lat: competitor.lat, lng: competitor.lng }}
                 icon={{
                   url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-                  scaledSize: (typeof window !== 'undefined' && (window as any).google)
-                    ? new (window as any).google.maps.Size(
-                        competitor.rating >= 4.5 ? 40 : competitor.rating >= 4.0 ? 35 : 30,
-                        competitor.rating >= 4.5 ? 40 : competitor.rating >= 4.0 ? 35 : 30
-                      )
-                    : undefined,
+                  scaledSize: new google.maps.Size(
+                    competitor.rating >= 4.5 ? 40 : competitor.rating >= 4.0 ? 35 : 30,
+                    competitor.rating >= 4.5 ? 40 : competitor.rating >= 4.0 ? 35 : 30
+                  ),
                 }}
                 title={competitor.name}
                 onClick={() => setSelectedCompetitor(competitor)}
