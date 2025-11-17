@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScoreGauge } from "@/components/audit/ScoreGauge";
 import { MetricCard } from "@/components/audit/MetricCard";
 import { EmailCaptureModal } from "@/components/audit/EmailCaptureModal";
 import { CompetitorMap } from "@/components/CompetitorMap";
+import { ProgressSection } from "@/components/ProgressSection";
 import { mockAuditData } from "@/lib/mockData";
+import type { AuditSection } from "@/types/audit";
 import {
   Lock,
   Unlock,
@@ -25,35 +27,40 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-const ResultsTeaser = () => {
+export const ResultsTeaserFullInteractive = () => {
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [unlockedSections, setUnlockedSections] = useState<string[]>([]);
   const [isAllUnlocked, setIsAllUnlocked] = useState(false);
   const [userEmail, setUserEmail] = useState("");
-  const [currentSection, setCurrentSection] = useState<string | null>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [competitorCount, setCompetitorCount] = useState(0);
 
   // Use mock data
   const auditData = mockAuditData;
 
+  // Simulate map loading progress
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMapLoaded(true);
+      // This would come from actual API response
+      setCompetitorCount(15);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleEmailSubmit = async (email: string) => {
     setUserEmail(email);
-    
-    if (currentSection === "all") {
-      setIsAllUnlocked(true);
-      setUnlockedSections([
-        "google_business",
-        "reviews",
-        "website",
-        "ota",
-        "social",
-        "competitive",
-      ]);
-    } else if (currentSection) {
-      setUnlockedSections((prev) => [...prev, currentSection]);
-    }
-    
+    setIsAllUnlocked(true);
+    setUnlockedSections([
+      "google_business",
+      "reviews",
+      "website",
+      "ota",
+      "social",
+      "competitive",
+    ]);
     setShowEmailModal(false);
-    setCurrentSection(null);
   };
 
   const sectionIcons = {
@@ -120,35 +127,76 @@ const ResultsTeaser = () => {
               {auditData.hotelInfo.city}, {auditData.hotelInfo.state}
             </p>
           </div>
-
-          {/* Overall Score */}
-          <div className="mt-12 max-w-md mx-auto">
-            <Card className="bg-white/10 backdrop-blur-lg border-white/20 p-8">
-              <div className="text-center">
-                <p className="text-indigo-100 text-sm font-medium mb-4">
-                  OVERALL PERFORMANCE SCORE
-                </p>
-                <div className="flex justify-center mb-4">
-                  <ScoreGauge 
-                    score={auditData.overallScore} 
-                    grade={auditData.overallGrade}
-                    size="lg" 
-                  />
-                </div>
-                <div className="text-5xl font-bold mb-2">
-                  {auditData.overallGrade}
-                </div>
-                <p className="text-indigo-100">
-                  {auditData.overallScore}/100 points
-                </p>
-              </div>
-            </Card>
-          </div>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Progress Section */}
+        <div className="mb-8">
+          <ProgressSection 
+            isComplete={mapLoaded} 
+            competitorCount={competitorCount}
+          />
+        </div>
+
+        {/* Competitor Map - Always Visible */}
+        <div className="mb-8">
+          <Card className="overflow-hidden">
+            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 border-b">
+              <div className="flex items-center gap-3">
+                <div className="bg-indigo-100 p-3 rounded-lg">
+                  <MapPin className="w-6 h-6 text-indigo-600" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Competitive Landscape
+                  </h2>
+                  <p className="text-gray-600 mt-1">
+                    Your hotel and nearby competitors within 2 miles
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="p-6">
+              {mapLoaded ? (
+                <CompetitorMap
+                  hotelName={auditData.hotelInfo.name}
+                  city={auditData.hotelInfo.city}
+                  state={auditData.hotelInfo.state}
+                />
+              ) : (
+                <div className="flex items-center justify-center py-20">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading competitor map...</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </Card>
+        </div>
+
+        {/* Overall Score */}
+        <div className="mb-8">
+          <Card className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-8">
+            <div className="text-center">
+              <p className="text-indigo-100 text-sm font-medium mb-4">
+                OVERALL PERFORMANCE SCORE
+              </p>
+              <div className="flex justify-center mb-4">
+                <ScoreGauge grade={auditData.overallGrade} score={auditData.overallScore} size="lg" />
+              </div>
+              <div className="text-5xl font-bold mb-2">
+                {auditData.overallGrade}
+              </div>
+              <p className="text-indigo-100">
+                {auditData.overallScore}/100 points
+              </p>
+            </div>
+          </Card>
+        </div>
+
         {/* Unlock All CTA */}
         {!isAllUnlocked && (
           <Card className="mb-8 bg-gradient-to-r from-indigo-500 to-purple-500 text-white p-6">
@@ -203,11 +251,7 @@ const ResultsTeaser = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <ScoreGauge 
-                        score={section.data.score || 0} 
-                        grade="B" 
-                        size="sm" 
-                      />
+                      <ScoreGauge grade={section.data.score >= 80 ? 'A' : section.data.score >= 70 ? 'B+' : section.data.score >= 60 ? 'B' : section.data.score >= 50 ? 'C' : 'D'} score={section.data.score} size="sm" />
                       {isUnlocked ? (
                         <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium flex items-center gap-1">
                           <CheckCircle className="w-4 h-4" />
@@ -232,10 +276,7 @@ const ResultsTeaser = () => {
                       .map((metric, idx) => (
                         <MetricCard
                           key={idx}
-                          metric={{
-                            ...metric,
-                            isLocked: showPreview && idx >= 2
-                          }}
+                          metric={metric}
                         />
                       ))}
                   </div>
@@ -267,28 +308,10 @@ const ResultsTeaser = () => {
 
                   {/* Full Content (when unlocked) */}
                   {isUnlocked && (
-                    <div className="space-y-6 mt-6">
-                      {/* Additional unlocked content */}
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-                        <p className="text-green-800 text-center font-medium">
-                          Full section details unlocked! Check your email for the complete analysis.
-                        </p>
-                      </div>
-
-                      {/* Special: Competitor Map for Competitive Analysis Section */}
-                      {section.id === "competitive" && (
-                        <div className="mt-8">
-                          <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                            <MapPin className="w-5 h-5 text-indigo-600" />
-                            Competitor Location Analysis
-                          </h3>
-                          <CompetitorMap
-                            hotelName={auditData.hotelInfo.name}
-                            city={auditData.hotelInfo.city}
-                            state={auditData.hotelInfo.state}
-                          />
-                        </div>
-                      )}
+                    <div className="mt-6">
+                      <p className="text-gray-600">
+                        Complete analysis for {section.title} with all metrics is now available.
+                      </p>
                     </div>
                   )}
                 </div>
@@ -324,16 +347,13 @@ const ResultsTeaser = () => {
       {/* Email Capture Modal */}
       <EmailCaptureModal
         isOpen={showEmailModal}
-        onClose={() => {
-          setShowEmailModal(false);
-          setCurrentSection(null);
-        }}
+        onClose={() => setShowEmailModal(false)}
         onSubmit={handleEmailSubmit}
-        section={currentSection as any}
         hotelName={auditData.hotelInfo.name}
+        section="all"
       />
     </div>
   );
 };
 
-export default ResultsTeaser;
+export default ResultsTeaserFullInteractive;
