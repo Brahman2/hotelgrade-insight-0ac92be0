@@ -34,6 +34,7 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
   const [target, setTarget] = useState<TargetHotel | null>(null);
   const [competitors, setCompetitors] = useState<Competitor[]>([]);
   const [selectedCompetitor, setSelectedCompetitor] = useState<Competitor | null>(null);
+  const [isScriptLoaded, setIsScriptLoaded] = useState(false);
 
   // Your Railway backend URL
   const BACKEND_URL = "https://web-production-13e22.up.railway.app";
@@ -127,7 +128,10 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
     <div className="space-y-4">
       {/* Map Container */}
       <Card className="overflow-hidden">
-        <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ""}>
+        <LoadScript 
+          googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ""}
+          onLoad={() => setIsScriptLoaded(true)}
+        >
           <GoogleMap
             mapContainerStyle={mapContainerStyle}
             center={center}
@@ -143,7 +147,7 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
             {target && <Circle center={center} options={circleOptions} />}
 
             {/* Target hotel marker (blue) */}
-            {target && (
+            {target && isScriptLoaded && (
               <Marker
                 position={{ lat: target.lat, lng: target.lng }}
                 icon={{
@@ -155,7 +159,7 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
             )}
 
             {/* Competitor markers (red) */}
-            {competitors.map((competitor, index) => (
+            {isScriptLoaded && competitors.map((competitor, index) => (
               <Marker
                 key={competitor.place_id || index}
                 position={{ lat: competitor.lat, lng: competitor.lng }}
