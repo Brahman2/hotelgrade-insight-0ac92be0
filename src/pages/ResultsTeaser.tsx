@@ -20,10 +20,12 @@ import {
   CheckCircle,
 } from "lucide-react";
 
+type TeaserSection = "google_business" | "reviews" | "website" | "ota" | "social" | "competitive";
+
 export const ResultsTeaserFullInteractive = () => {
   const [showEmailModal, setShowEmailModal] = useState(false);
-  const [unlockedSections, setUnlockedSections] = useState<string[]>([]);
-  const [isAllUnlocked, setIsAllUnlocked] = useState(false);
+  const [currentSection, setCurrentSection] = useState<TeaserSection | "all">("all");
+  const [unlockedSections, setUnlockedSections] = useState<TeaserSection[]>([]);
   const [userEmail, setUserEmail] = useState("");
   const [mapLoaded, setMapLoaded] = useState(false);
   const [competitorCount, setCompetitorCount] = useState(0);
@@ -43,16 +45,26 @@ export const ResultsTeaserFullInteractive = () => {
 
   const handleEmailSubmit = async (email: string) => {
     setUserEmail(email);
-    setIsAllUnlocked(true);
-    setUnlockedSections([
-      "google_business",
-      "reviews",
-      "website",
-      "ota",
-      "social",
-      "competitive",
-    ]);
+    
+    if (currentSection === "all") {
+      setUnlockedSections([
+        "google_business",
+        "reviews",
+        "website",
+        "ota",
+        "social",
+        "competitive",
+      ]);
+    } else {
+      setUnlockedSections(prev => [...prev, currentSection]);
+    }
+    
     setShowEmailModal(false);
+  };
+
+  const handleUnlockClick = (sectionId: TeaserSection | "all") => {
+    setCurrentSection(sectionId);
+    setShowEmailModal(true);
   };
 
   const sectionIcons = {
@@ -147,7 +159,7 @@ export const ResultsTeaserFullInteractive = () => {
           <Separator className="my-6" />
 
           {/* Unlock All CTA */}
-          {!isAllUnlocked && (
+          {unlockedSections.length < sections.length && (
             <Card className="mb-6 bg-primary text-primary-foreground p-6">
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
@@ -166,7 +178,7 @@ export const ResultsTeaserFullInteractive = () => {
                 <Button
                   size="lg"
                   variant="secondary"
-                  onClick={() => setShowEmailModal(true)}
+                  onClick={() => handleUnlockClick("all")}
                   className="w-full"
                 >
                   <Mail className="w-4 h-4 mr-2" />
@@ -180,7 +192,7 @@ export const ResultsTeaserFullInteractive = () => {
           <div className="space-y-4">
             {sections.map((section) => {
               const Icon = sectionIcons[section.id as keyof typeof sectionIcons];
-              const isUnlocked = isAllUnlocked || unlockedSections.includes(section.id);
+              const isUnlocked = unlockedSections.includes(section.id as TeaserSection);
               const showPreview = !isUnlocked;
 
               return (
@@ -248,7 +260,7 @@ export const ResultsTeaserFullInteractive = () => {
                               Unlock to see detailed analysis
                             </p>
                             <Button
-                              onClick={() => setShowEmailModal(true)}
+                              onClick={() => handleUnlockClick(section.id as TeaserSection)}
                               size="sm"
                             >
                               <Mail className="w-3 h-3 mr-2" />
