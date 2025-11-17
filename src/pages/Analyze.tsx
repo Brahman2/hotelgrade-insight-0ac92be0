@@ -1,363 +1,427 @@
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Check, Loader2, Edit3 } from "lucide-react";
-import { useEffect, useState, useRef } from "react";
-import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
-
-interface CompetitorData {
-  name: string;
-  lat: number;
-  lng: number;
-  rating: number;
-}
-
-interface TargetHotel {
-  name: string;
-  lat: number;
-  lng: number;
-}
-
-const scanningSteps = [
-  "🏨 Finding hotel & competitors",
-  "⭐ Checking Google Business Profile",
-  "💬 Analyzing reviews across platforms",
-  "📸 Counting photos & media",
-  "🌐 Testing website speed",
-  "📱 Checking mobile experience",
-  "🔍 Measuring search visibility",
-  "🏢 Scanning OTA presence",
-  "📊 Checking metasearch visibility",
-  "📈 Analyzing social media",
-];
+import { Button } from "@/components/ui/button";
+import { ScoreGauge } from "@/components/audit/ScoreGauge";
+import { MetricCard } from "@/components/audit/MetricCard";
+import { EmailCaptureModal } from "@/components/audit/EmailCaptureModal";
+import { CompetitorMap } from "@/components/CompetitorMap";
+import { ProgressSection } from "@/components/ProgressSection";
+import { MOCK_AUDIT_REPORT } from "@/lib/mockData";
+import type { AuditReport } from "@/types/audit";
+import {
+  Lock,
+  Unlock,
+  Mail,
+  TrendingUp,
+  Star,
+  Globe,
+  Hotel,
+  Share2,
+  Target,
+  MapPin,
+  ArrowRight,
+  CheckCircle,
+  AlertCircle,
+  ChevronLeft,
+} from "lucide-react";
 
 const Analyze = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const formData = location.state as { hotelName: string; city: string; state: string };
+  const formData = location.state || { hotelName: "Grand Plaza Hotel", city: "Chicago", state: "Illinois" };
+  
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [unlockedSections, setUnlockedSections] = useState<string[]>([]);
+  const [isAllUnlocked, setIsAllUnlocked] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
+  const [analysisComplete, setAnalysisComplete] = useState(false);
+  const [competitorCount, setCompetitorCount] = useState(0);
 
-  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
-  const [secondsRemaining, setSecondsRemaining] = useState(30);
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [competitors, setCompetitors] = useState<CompetitorData[]>([]);
-  const [targetHotel, setTargetHotel] = useState<TargetHotel | null>(null);
-  const [mapLoading, setMapLoading] = useState(true);
-  const [apiError, setApiError] = useState<string>("");
-  const [hotelCenter, setHotelCenter] = useState({ lat: 0, lng: 0 });
-  const [isScriptLoaded, setIsScriptLoaded] = useState(false);
-  const hasNavigated = useRef(false);
-
-  console.log('🚀 Analyze component rendered');
-  console.log('📋 Form data:', formData);
-  console.log('🗺️ isScriptLoaded:', isScriptLoaded);
-
-  useEffect(() => {
-    if (!formData) {
-      navigate("/");
-      return;
-    }
-
-    console.log('🚀 Starting hotel analysis...');
-    console.log('📍 Hotel:', formData.hotelName, formData.city, formData.state);
-
-    // Fetch competitors from API immediately
-    const fetchCompetitors = async () => {
-      console.log('📡 Fetching competitors...');
-      try {
-        setMapLoading(true);
-        setApiError("");
-        
-        const response = await fetch('https://web-production-13e22.up.railway.app/api/find-competitors', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            hotel_name: formData.hotelName,
-            city: formData.city,
-            state: formData.state,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Hotel not found or API error');
-        }
-
-        const data = await response.json();
-        console.log('✅ API Response:', data);
-        
-        if (data.target && data.target.lat && data.target.lng) {
-          const target: TargetHotel = {
-            name: data.target.name || formData.hotelName,
-            lat: data.target.lat,
-            lng: data.target.lng,
-          };
-          setTargetHotel(target);
-          setHotelCenter({ lat: target.lat, lng: target.lng });
-        }
-
-        if (data.competitors && Array.isArray(data.competitors)) {
-          const apiCompetitors: CompetitorData[] = data.competitors.map((comp: any) => ({
-            name: comp.name || 'Unknown Hotel',
-            lat: comp.lat,
-            lng: comp.lng,
-            rating: comp.rating || 0,
-          }));
-          setCompetitors(apiCompetitors);
-        }
-
-        setMapLoading(false);
-      } catch (error) {
-        console.error("❌ Error fetching competitors:", error);
-        setApiError(error instanceof Error ? error.message : "Failed to load hotel data");
-        setMapLoading(false);
-      }
-    };
-
-    fetchCompetitors();
-
-    // Scanning progress animation (3 seconds per step)
-    scanningSteps.forEach((_, index) => {
-      setTimeout(() => {
-        setCompletedSteps((prev) => [...prev, index]);
-      }, index * 3000);
-    });
-
-    // Countdown timer
-    const countdownInterval = setInterval(() => {
-      setSecondsRemaining((prev) => {
-        if (prev <= 1) {
-          clearInterval(countdownInterval);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(countdownInterval);
-  }, [formData, navigate]);
-
-  // Separate useEffect to handle navigation when countdown reaches 0
-  useEffect(() => {
-    if (secondsRemaining === 0 && !hasNavigated.current) {
-      hasNavigated.current = true;
-      navigate("/results", {
-        state: {
-          ...formData,
-          competitors,
-          targetHotel,
-        },
-      });
-    }
-  }, [secondsRemaining, formData, competitors, targetHotel, navigate]);
-
-  if (!formData) return null;
-
-  const handleNotifyMe = () => {
-    console.log("Notify:", { phone, email });
-    // In production: Send notification request to backend
+  // Use mock data (in production, this would come from API)
+  const auditData: AuditReport = {
+    ...MOCK_AUDIT_REPORT,
+    hotelName: formData.hotelName,
+    city: formData.city,
+    state: formData.state,
   };
 
-  const mapContainerStyle = {
-    width: "100%",
-    height: "450px",
+  // Simulate analysis completion
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setAnalysisComplete(true);
+      setCompetitorCount(15);
+    }, 8000); // 8 seconds to match 6-step progress
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleEmailSubmit = async (email: string) => {
+    setUserEmail(email);
+    setIsAllUnlocked(true);
+    setUnlockedSections([
+      "google_business",
+      "reviews",
+      "website",
+      "ota",
+      "social",
+      "competitive",
+    ]);
+    setShowEmailModal(false);
   };
+
+  const sectionIcons = {
+    google_business: Globe,
+    reviews: Star,
+    website: Globe,
+    ota: Hotel,
+    social: Share2,
+    competitive: Target,
+  };
+
+  const sections = [
+    {
+      id: "google_business",
+      title: "Digital Presence",
+      description: "Your Google presence and local search visibility",
+      data: auditData.digitalPresence,
+    },
+    {
+      id: "reviews",
+      title: "Reputation",
+      description: "Review performance across all major platforms",
+      data: auditData.reputation,
+    },
+    {
+      id: "website",
+      title: "Social Media",
+      description: "Social media presence and engagement metrics",
+      data: auditData.socialMedia,
+    },
+    {
+      id: "ota",
+      title: "Advertising",
+      description: "Advertising and paid marketing presence",
+      data: auditData.advertising,
+    },
+    {
+      id: "social",
+      title: "Booking",
+      description: "Online booking channels and optimization",
+      data: auditData.booking,
+    },
+    {
+      id: "competitive",
+      title: "Competitive Analysis",
+      description: "Market position and competitor insights",
+      data: auditData.competitive,
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Mobile/Desktop Layout */}
-      <div className="flex flex-col lg:flex-row h-screen">
-        {/* LEFT PANEL */}
-        <div className="lg:w-[40%] bg-muted/30 p-6 lg:p-8 overflow-y-auto">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <img src="/logo-icon.svg" alt="HotelGrader" className="h-8 w-8" />
-              <span className="text-xl font-bold text-foreground">HotelGrader</span>
-            </div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">Analyzing {formData.hotelName}</h1>
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+      {/* Header - matches Index.tsx */}
+      <header className="bg-background/95 backdrop-blur-sm shadow-md">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <img src="/logo-icon.svg" alt="HotelGrader" className="h-8 w-8" />
+            <span className="text-xl font-bold text-foreground">HotelGrader</span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/")}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Back to Home
+          </Button>
+        </div>
+      </header>
+
+      {/* Hero Section - matches Index.tsx style */}
+      <section className="pt-12 pb-8 px-4 bg-gradient-to-r from-primary/10 to-secondary/10">
+        <div className="container mx-auto max-w-7xl">
+          <div className="text-center mb-4">
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+              Performance Audit Results
+            </h1>
+            <p className="text-xl text-muted-foreground">
+              {auditData.hotelName}
+            </p>
             <p className="text-muted-foreground">
-              {formData.city}, {formData.state}
+              {auditData.city}, {auditData.state}
             </p>
           </div>
+        </div>
+      </section>
 
-          {/* Scanning Progress */}
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold text-foreground mb-6">Analysis in Progress...</h2>
-            <div className="space-y-3">
-              {scanningSteps.map((step, index) => (
-                <div
-                  key={index}
-                  className={`flex items-start gap-3 transition-all duration-500 ${
-                    completedSteps.includes(index) ? "text-green-600 dark:text-green-500" : "text-muted-foreground"
-                  }`}
-                >
-                  <div className="mt-0.5">
-                    {completedSteps.includes(index) ? (
-                      <Check className="h-5 w-5 animate-scale-in" />
-                    ) : (
-                      <div className="h-5 w-5 rounded-full border-2 border-current" />
+      {/* Main Content */}
+      <div className="container mx-auto max-w-7xl px-4 py-8">
+        {/* Progress Section - shows until analysis complete */}
+        <div className="mb-8">
+          <ProgressSection 
+            isComplete={analysisComplete} 
+            competitorCount={competitorCount}
+          />
+        </div>
+
+        {/* Competitor Map - always visible, loads after progress */}
+        <div className="mb-8">
+          <Card className="overflow-hidden border border-border shadow-lg">
+            <div className="bg-muted/30 p-6 border-b border-border">
+              <div className="flex items-center gap-3">
+                <div className="bg-primary/10 p-3 rounded-lg">
+                  <MapPin className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground">
+                    Competitive Landscape
+                  </h2>
+                  <p className="text-muted-foreground mt-1">
+                    Your hotel and nearby competitors within 2 miles
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="p-6">
+              {analysisComplete ? (
+                <CompetitorMap
+                  hotelName={auditData.hotelName}
+                  city={auditData.city}
+                  state={auditData.state}
+                />
+              ) : (
+                <div className="flex items-center justify-center py-20">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Loading competitor map...</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </Card>
+        </div>
+
+        {/* Overall Score - shows after analysis complete */}
+        {analysisComplete && (
+          <div className="mb-8 animate-fade-in">
+            <Card className="bg-gradient-to-r from-primary to-secondary text-primary-foreground p-8 shadow-xl border-0">
+              <div className="text-center">
+                <p className="text-primary-foreground/80 text-sm font-medium mb-4">
+                  OVERALL PERFORMANCE SCORE
+                </p>
+                <div className="flex justify-center mb-4">
+                  <ScoreGauge 
+                    grade={auditData.executiveSummary.overallGrade}
+                    score={auditData.executiveSummary.overallScore} 
+                    size="xl" 
+                  />
+                </div>
+                <div className="text-5xl font-bold mb-2">
+                  {auditData.executiveSummary.overallGrade}
+                </div>
+                <p className="text-primary-foreground/80">
+                  {auditData.executiveSummary.overallScore}/100 points
+                </p>
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* Unlock All CTA - shows after analysis complete */}
+        {analysisComplete && !isAllUnlocked && (
+          <Card className="mb-8 bg-gradient-to-r from-primary/90 to-secondary/90 text-primary-foreground p-6 shadow-lg border-0 animate-fade-in">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4 text-center md:text-left">
+                <div className="bg-white/20 p-3 rounded-lg">
+                  <Unlock className="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold mb-1">
+                    Unlock Your Complete Analysis
+                  </h3>
+                  <p className="text-primary-foreground/80">
+                    Get instant access to all {sections.length} sections with detailed insights
+                  </p>
+                </div>
+              </div>
+              <Button
+                size="lg"
+                variant="secondary"
+                onClick={() => setShowEmailModal(true)}
+                className="bg-white text-primary hover:bg-white/90 shadow-lg whitespace-nowrap"
+              >
+                <Mail className="w-4 h-4 mr-2" />
+                Unlock All Sections
+              </Button>
+            </div>
+          </Card>
+        )}
+
+        {/* Section Cards - show after analysis complete */}
+        {analysisComplete && (
+          <div className="space-y-8 animate-fade-in">
+            {sections.map((section) => {
+              const Icon = sectionIcons[section.id as keyof typeof sectionIcons];
+              const isUnlocked = isAllUnlocked || unlockedSections.includes(section.id);
+              const showPreview = !isUnlocked;
+
+              return (
+                <Card key={section.id} className="overflow-hidden border border-border shadow-lg">
+                  {/* Section Header */}
+                  <div className="bg-muted/30 p-6 border-b border-border">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className="bg-primary/10 p-3 rounded-lg">
+                          <Icon className="w-6 h-6 text-primary" />
+                        </div>
+                        <div>
+                          <h2 className="text-2xl font-bold text-foreground">
+                            {section.title}
+                          </h2>
+                          <p className="text-muted-foreground mt-1">{section.description}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <ScoreGauge 
+                          grade={section.data.score >= 90 ? 'A' : section.data.score >= 80 ? 'B' : section.data.score >= 70 ? 'C' : 'D'} 
+                          score={section.data.score || 0} 
+                          size="sm" 
+                        />
+                        {isUnlocked ? (
+                          <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium flex items-center gap-1">
+                            <CheckCircle className="w-4 h-4" />
+                            Unlocked
+                          </span>
+                        ) : (
+                          <span className="px-3 py-1 bg-muted text-muted-foreground rounded-full text-sm font-medium flex items-center gap-1">
+                            <Lock className="w-4 h-4" />
+                            Locked
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Section Content */}
+                  <div className="p-6">
+                    {/* Preview (first 2-3 metrics) */}
+                    <div className="grid md:grid-cols-2 gap-4 mb-6">
+                      {section.data.metrics
+                        .slice(0, showPreview ? 3 : undefined)
+                        .map((metric, idx) => (
+                          <MetricCard
+                            key={idx}
+                            metric={{
+                              ...metric,
+                              isLocked: showPreview && idx >= 2
+                            }}
+                            onUnlockClick={() => setShowEmailModal(true)}
+                          />
+                        ))}
+                    </div>
+
+                    {/* Locked Overlay / Unlock Button */}
+                    {showPreview && (
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background to-background z-10 -mt-20"></div>
+                        <div className="relative z-20 pt-8 text-center">
+                          <div className="bg-card/80 backdrop-blur-sm rounded-lg p-6 inline-block border border-border shadow-lg">
+                            <Lock className="w-12 h-12 text-primary mx-auto mb-4" />
+                            <h3 className="text-xl font-bold mb-2">
+                              {section.data.metrics.length - 3} More Insights Locked
+                            </h3>
+                            <p className="text-muted-foreground mb-4">
+                              Unlock to see detailed analysis and recommendations
+                            </p>
+                            <Button
+                              onClick={() => setShowEmailModal(true)}
+                              className="bg-primary hover:bg-primary/90"
+                            >
+                              <Mail className="w-4 h-4 mr-2" />
+                              Unlock This Section
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Full Content (when unlocked) */}
+                    {isUnlocked && (
+                      <div className="space-y-6 mt-6">
+                        {/* Key Findings */}
+                        <div className="bg-primary/5 rounded-lg p-6 border border-primary/10">
+                          <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                            <AlertCircle className="w-5 h-5 text-primary" />
+                            Key Findings
+                          </h3>
+                          <ul className="space-y-2">
+                            {section.data.metrics.filter(m => m.insight).map((metric, idx) => (
+                              <li key={idx} className="flex items-start gap-2">
+                                <ArrowRight className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
+                                <span className="text-foreground">{metric.insight}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        {/* Recommendations */}
+                        <div className="bg-green-50 rounded-lg p-6 border border-green-100">
+                          <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                            <TrendingUp className="w-5 h-5 text-green-600" />
+                            Priority Actions
+                          </h3>
+                          <ul className="space-y-2">
+                            {section.data.metrics.filter(m => m.recommendation).map((metric, idx) => (
+                              <li key={idx} className="flex items-start gap-2">
+                                <CheckCircle className="w-4 h-4 text-green-600 mt-1 flex-shrink-0" />
+                                <span className="text-foreground">{metric.recommendation}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
                     )}
                   </div>
-                  <span className="text-sm">{step}</span>
-                </div>
-              ))}
-            </div>
+                </Card>
+              );
+            })}
           </div>
+        )}
 
-          {/* Progress Indicator */}
-          <Card className="p-6 mb-6">
-            <div className="flex items-center gap-4">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <div>
-                <p className="font-semibold text-foreground">Running...</p>
-                <p className="text-sm text-muted-foreground">{secondsRemaining} seconds remaining</p>
-              </div>
-            </div>
-          </Card>
-
-          <Separator className="my-6" />
-
-          {/* Bottom Section */}
-          <div className="space-y-4">
-            <p className="font-semibold text-foreground">Can't wait for results?</p>
-            <Input type="tel" placeholder="555-123-4567" value={phone} onChange={(e) => setPhone(e.target.value)} />
-            <Input type="email" placeholder="you@hotel.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-            <Button onClick={handleNotifyMe} className="w-full">
-              Text & Email Me Results
-            </Button>
-            <p className="text-xs text-muted-foreground text-center">We'll send your report immediately</p>
-          </div>
-        </div>
-
-        {/* RIGHT PANEL */}
-        <div className="lg:w-[60%] bg-background p-6 lg:p-8 overflow-y-auto">
-          {/* Search Bar */}
-          <Card className="p-4 mb-6 flex items-center justify-between">
-            <span className="text-sm font-medium">
-              {formData.hotelName} in {formData.city}
-            </span>
-            <Edit3 className="h-4 w-4 text-muted-foreground" />
-          </Card>
-
-          {/* Map Section */}
-          <div className="mb-4">
-            <h2 className="text-xl font-semibold text-foreground mb-4">Competitive Landscape</h2>
-
-            {apiError ? (
-              <div className="w-full h-[450px] bg-muted rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                  <p className="text-destructive font-semibold mb-2">Error Loading Map</p>
-                  <p className="text-muted-foreground text-sm">{apiError}</p>
-                </div>
-              </div>
-            ) : mapLoading ? (
-              <div className="w-full h-[450px] bg-muted animate-pulse rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
-                  <p className="text-muted-foreground">Loading competitors...</p>
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-lg overflow-hidden border border-border">
-                <LoadScript
-                  googleMapsApiKey="AIzaSyB7TPyciCLKNs8Ukp_8q9xEdzYycJa7D3M"
-                  onLoad={() => {
-                    console.log('🗺️ Google Maps script loaded');
-                    setIsScriptLoaded(true);
-                  }}
-                >
-                  {isScriptLoaded && (() => {
-                    console.log('🗺️ Rendering GoogleMap component');
-                    console.log('📍 Map center:', hotelCenter);
-                    console.log('🎯 Target hotel for marker:', targetHotel);
-                    console.log('🔴 Competitors for markers:', competitors);
-                    console.log('📊 Total markers to render:', (targetHotel ? 1 : 0) + competitors.length);
-                    return (
-                      <GoogleMap
-                        mapContainerStyle={mapContainerStyle}
-                        center={hotelCenter}
-                        zoom={14}
-                        options={{
-                          disableDefaultUI: false,
-                          zoomControl: true,
-                          styles: [
-                            {
-                              featureType: "poi",
-                              elementType: "labels",
-                              stylers: [{ visibility: "off" }],
-                            },
-                          ],
-                        }}
-                      >
-                        {/* Target Hotel Marker - LARGE BLUE */}
-                        {targetHotel && (() => {
-                          console.log('🔵 Rendering BLUE target marker at:', targetHotel.lat, targetHotel.lng);
-                          return (
-                            <Marker
-                              position={{ lat: targetHotel.lat, lng: targetHotel.lng }}
-                              icon={{
-                                path: window.google.maps.SymbolPath.CIRCLE,
-                                fillColor: "#0EA5E9",
-                                fillOpacity: 1,
-                                strokeColor: "#FFFFFF",
-                                strokeWeight: 2,
-                                scale: 15,
-                              }}
-                              label={{
-                                text: "🏨",
-                                fontSize: "24px",
-                              }}
-                              title={`${targetHotel.name} (Your Hotel)`}
-                            />
-                          );
-                        })()}
-
-                        {/* Competitor Markers - SMALL RED */}
-                        {competitors.map((competitor, index) => {
-                          console.log(`🔴 Rendering RED competitor marker #${index + 1}:`, competitor.name, 'at', competitor.lat, competitor.lng);
-                          return (
-                            <Marker
-                              key={index}
-                              position={{ lat: competitor.lat, lng: competitor.lng }}
-                              icon={{
-                                path: window.google.maps.SymbolPath.CIRCLE,
-                                fillColor: "#EF4444",
-                                fillOpacity: 1,
-                                strokeColor: "#FFFFFF",
-                                strokeWeight: 1,
-                                scale: 8,
-                              }}
-                              title={`${competitor.name} - ${competitor.rating.toFixed(1)} ★`}
-                            />
-                          );
-                        })}
-                      </GoogleMap>
-                    );
-                  })()}
-                </LoadScript>
-              </div>
-            )}
-          </div>
-
-          {/* Map Legend */}
-          <Card className="p-4">
-            <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-4">
-                <span className="flex items-center gap-2">
-                  <span className="text-lg">🏨</span> Your Hotel
-                </span>
-                <span className="text-muted-foreground">|</span>
-                <span className="flex items-center gap-2">
-                  <span className="text-lg">🔴</span> Competitors
-                </span>
-              </div>
-              <span className="text-muted-foreground">Showing {competitors.length + 1} hotels within 2 miles</span>
+        {/* Final CTA - shows after all sections */}
+        {analysisComplete && !isAllUnlocked && (
+          <Card className="mt-12 bg-gradient-to-r from-primary to-secondary text-primary-foreground p-8 shadow-xl border-0 animate-fade-in">
+            <div className="text-center max-w-2xl mx-auto">
+              <h2 className="text-3xl font-bold mb-4">
+                Ready for Your Complete Analysis?
+              </h2>
+              <p className="text-xl text-primary-foreground/80 mb-6">
+                Unlock all {sections.length} sections and get your full 40-point performance audit
+              </p>
+              <Button
+                size="lg"
+                variant="secondary"
+                onClick={() => setShowEmailModal(true)}
+                className="bg-white text-primary hover:bg-white/90 shadow-lg"
+              >
+                <Mail className="w-5 h-5 mr-2" />
+                Get My Full Report
+              </Button>
             </div>
           </Card>
-        </div>
+        )}
       </div>
+
+      {/* Email Capture Modal */}
+      <EmailCaptureModal
+        isOpen={showEmailModal}
+        onClose={() => setShowEmailModal(false)}
+        onSubmit={handleEmailSubmit}
+        section="all"
+        hotelName={auditData.hotelName}
+      />
     </div>
   );
 };
