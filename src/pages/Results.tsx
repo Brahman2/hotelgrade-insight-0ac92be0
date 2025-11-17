@@ -28,6 +28,8 @@ const Results = () => {
   const navigate = useNavigate();
   const formData = location.state as any;
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+  const [mapsError, setMapsError] = useState<string | null>(null);
+  const mapsKey = (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined) || "";
 
   if (!formData) {
     navigate("/");
@@ -351,59 +353,67 @@ const Results = () => {
 
           <Card className="p-4">
             <div className="rounded-lg overflow-hidden border border-border">
-              <LoadScript
-                googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ""}
-                onLoad={() => setIsScriptLoaded(true)}
-              >
-                {isScriptLoaded && (
-                  <GoogleMap
-                    mapContainerStyle={{ width: "100%", height: "600px" }}
-                    center={hotelCenter}
-                    zoom={14}
-                    options={{
-                      disableDefaultUI: false,
-                      zoomControl: true,
-                      styles: [
-                        {
-                          featureType: "poi",
-                          elementType: "labels",
-                          stylers: [{ visibility: "off" }],
-                        },
-                      ],
-                    }}
-                  >
-                    {targetHotel && (
-                      <Marker
-                        position={{ lat: targetHotel.lat, lng: targetHotel.lng }}
-                        icon={{
-                          path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
-                          fillColor: "#0EA5E9",
-                          fillOpacity: 1,
-                          strokeWeight: 3,
-                          strokeColor: "#ffffff",
-                          scale: 2.5,
-                        }}
-                        title={targetHotel.name}
-                      />
-                    )}
-                    {competitors.map((competitor: any, index: number) => (
-                      <Marker
-                        key={index}
-                        position={{ lat: competitor.lat, lng: competitor.lng }}
-                        icon={{
-                          path: window.google.maps.SymbolPath.CIRCLE,
-                          fillColor: "#EF4444",
-                          fillOpacity: 1,
-                          strokeWeight: 2,
-                          strokeColor: "#ffffff",
-                          scale: 8,
-                        }}
-                        title={`${competitor.name} - ${competitor.rating}★`}
-                      />
-                    ))}
-                  </GoogleMap>
-                )}
-              </LoadScript>
+              {mapsKey ? (
+                <LoadScript
+                  googleMapsApiKey={mapsKey}
+                  onLoad={() => setIsScriptLoaded(true)}
+                  onError={() => setMapsError("load-error")}
+                >
+                  {isScriptLoaded && !mapsError && (
+                    <GoogleMap
+                      mapContainerStyle={{ width: "100%", height: "600px" }}
+                      center={hotelCenter}
+                      zoom={14}
+                      options={{
+                        disableDefaultUI: false,
+                        zoomControl: true,
+                        styles: [
+                          {
+                            featureType: "poi",
+                            elementType: "labels",
+                            stylers: [{ visibility: "off" }],
+                          },
+                        ],
+                      }}
+                    >
+                      {targetHotel && (
+                        <Marker
+                          position={{ lat: targetHotel.lat, lng: targetHotel.lng }}
+                          icon={{
+                            path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
+                            fillColor: "#0EA5E9",
+                            fillOpacity: 1,
+                            strokeWeight: 3,
+                            strokeColor: "#ffffff",
+                            scale: 2.5,
+                          }}
+                          title={targetHotel.name}
+                        />
+                      )}
+                      {competitors.map((competitor: any, index: number) => (
+                        <Marker
+                          key={index}
+                          position={{ lat: competitor.lat, lng: competitor.lng }}
+                          icon={{
+                            path: window.google.maps.SymbolPath.CIRCLE,
+                            fillColor: "#EF4444",
+                            fillOpacity: 1,
+                            strokeWeight: 2,
+                            strokeColor: "#ffffff",
+                            scale: 8,
+                          }}
+                          title={`${competitor.name} - ${competitor.rating}★`}
+                        />
+                      ))}
+                    </GoogleMap>
+                  )}
+                </LoadScript>
+              ) : (
+                <div className="p-6 text-sm text-muted-foreground">
+                  Google Map unavailable. Add VITE_GOOGLE_MAPS_API_KEY to enable the map.
+                </div>
+              )}
+
               
               <div className="mt-4 p-4 bg-muted/30 rounded-lg">
                 <div className="flex items-center justify-between">
