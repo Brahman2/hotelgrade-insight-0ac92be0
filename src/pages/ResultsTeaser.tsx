@@ -1,30 +1,23 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { ScoreGauge } from "@/components/audit/ScoreGauge";
 import { MetricCard } from "@/components/audit/MetricCard";
 import { EmailCaptureModal } from "@/components/audit/EmailCaptureModal";
 import { CompetitorMap } from "@/components/CompetitorMap";
 import { ProgressSection } from "@/components/ProgressSection";
 import { mockAuditData } from "@/lib/mockData";
-import type { AuditSection } from "@/types/audit";
 import {
   Lock,
   Unlock,
   Mail,
-  TrendingUp,
   Star,
   Globe,
-  Search,
   Hotel,
-  Camera,
   Share2,
-  ShoppingCart,
   Target,
-  MapPin,
-  ArrowRight,
   CheckCircle,
-  AlertCircle,
 } from "lucide-react";
 
 export const ResultsTeaserFullInteractive = () => {
@@ -42,7 +35,6 @@ export const ResultsTeaserFullInteractive = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setMapLoaded(true);
-      // This would come from actual API response
       setCompetitorCount(15);
     }, 3000);
 
@@ -112,53 +104,185 @@ export const ResultsTeaserFullInteractive = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold mb-4">
-              Performance Audit Results
-            </h1>
-            <p className="text-xl text-indigo-100 mb-2">
-              {auditData.hotelInfo.name}
-            </p>
-            <p className="text-indigo-200">
-              {auditData.hotelInfo.city}, {auditData.hotelInfo.state}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Progress Section */}
-        <div className="mb-8">
-          <ProgressSection 
-            isComplete={mapLoaded} 
-            competitorCount={competitorCount}
-          />
-        </div>
-
-        {/* Competitor Map - Always Visible */}
-        <div className="mb-8">
-          <Card className="overflow-hidden">
-            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 border-b">
-              <div className="flex items-center gap-3">
-                <div className="bg-indigo-100 p-3 rounded-lg">
-                  <MapPin className="w-6 h-6 text-indigo-600" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    Competitive Landscape
-                  </h2>
-                  <p className="text-gray-600 mt-1">
-                    Your hotel and nearby competitors within 2 miles
+    <div className="min-h-screen bg-background">
+      <div className="flex flex-col lg:flex-row min-h-screen">
+        {/* LEFT PANEL */}
+        <div className="lg:w-[40%] bg-muted/30 p-6 lg:p-8 overflow-y-auto">
+          {/* Top Banner - Hotel Info & Grade */}
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-6">
+              <img src="/logo-icon.svg" alt="HotelGrader" className="h-8 w-8" />
+              <span className="text-xl font-bold text-foreground">HotelGrader</span>
+            </div>
+            
+            <Card className="p-6 bg-background/50 border-2">
+              <div className="flex items-start gap-6">
+                <ScoreGauge grade={auditData.overallGrade} score={auditData.overallScore} size="md" />
+                <div className="flex-1">
+                  <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
+                    {auditData.hotelInfo.name}
+                  </h1>
+                  <p className="text-muted-foreground mb-3">
+                    {auditData.hotelInfo.city}, {auditData.hotelInfo.state}
                   </p>
+                  <div className="space-y-1">
+                    <p className="text-lg font-semibold text-foreground">Overall Performance</p>
+                    <p className="text-sm text-muted-foreground">{auditData.overallScore}/100 points</p>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="p-6">
+            </Card>
+          </div>
+
+          <Separator className="my-6" />
+
+          {/* Progress Section */}
+          <div className="mb-6">
+            <ProgressSection 
+              isComplete={mapLoaded} 
+              competitorCount={competitorCount}
+            />
+          </div>
+
+          <Separator className="my-6" />
+
+          {/* Unlock All CTA */}
+          {!isAllUnlocked && (
+            <Card className="mb-6 bg-primary text-primary-foreground p-6">
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="bg-primary-foreground/20 p-3 rounded-lg">
+                    <Unlock className="w-8 h-8" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold mb-1">
+                      Unlock Your Complete Analysis
+                    </h3>
+                    <p className="text-primary-foreground/80 text-sm">
+                      Get instant access to all {sections.length} sections with detailed insights
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  onClick={() => setShowEmailModal(true)}
+                  className="w-full"
+                >
+                  <Mail className="w-4 h-4 mr-2" />
+                  Unlock All Sections
+                </Button>
+              </div>
+            </Card>
+          )}
+
+          {/* Section Cards */}
+          <div className="space-y-4">
+            {sections.map((section) => {
+              const Icon = sectionIcons[section.id as keyof typeof sectionIcons];
+              const isUnlocked = isAllUnlocked || unlockedSections.includes(section.id);
+              const showPreview = !isUnlocked;
+
+              return (
+                <Card key={section.id} className="overflow-hidden">
+                  {/* Section Header */}
+                  <div className="bg-muted/50 p-4 border-b">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-primary/10 p-2 rounded-lg">
+                          <Icon className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-foreground">
+                            {section.title}
+                          </h3>
+                          <p className="text-xs text-muted-foreground">{section.description}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <ScoreGauge 
+                          grade={section.data.score >= 80 ? 'A' : section.data.score >= 70 ? 'B+' : section.data.score >= 60 ? 'B' : section.data.score >= 50 ? 'C' : 'D'} 
+                          score={section.data.score} 
+                          size="sm" 
+                        />
+                        {isUnlocked ? (
+                          <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full text-xs font-medium flex items-center gap-1">
+                            <CheckCircle className="w-3 h-3" />
+                            Unlocked
+                          </span>
+                        ) : (
+                          <span className="px-2 py-1 bg-muted text-muted-foreground rounded-full text-xs font-medium flex items-center gap-1">
+                            <Lock className="w-3 h-3" />
+                            Locked
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Section Content */}
+                  <div className="p-4">
+                    {/* Preview (first 2 metrics) */}
+                    <div className="grid gap-3 mb-4">
+                      {section.data.metrics
+                        .slice(0, showPreview ? 2 : undefined)
+                        .map((metric, idx) => (
+                          <MetricCard
+                            key={idx}
+                            metric={metric}
+                          />
+                        ))}
+                    </div>
+
+                    {/* Locked Overlay / Unlock Button */}
+                    {showPreview && (
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background to-background z-10 -mt-12"></div>
+                        <div className="relative z-20 pt-8 text-center">
+                          <div className="bg-background/80 backdrop-blur-sm rounded-lg p-4 inline-block border">
+                            <Lock className="w-8 h-8 text-primary mx-auto mb-3" />
+                            <h4 className="font-bold mb-2">
+                              {section.data.metrics.length - 2} More Insights Locked
+                            </h4>
+                            <p className="text-sm text-muted-foreground mb-3">
+                              Unlock to see detailed analysis
+                            </p>
+                            <Button
+                              onClick={() => setShowEmailModal(true)}
+                              size="sm"
+                            >
+                              <Mail className="w-3 h-3 mr-2" />
+                              Unlock Section
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Full Content (when unlocked) */}
+                    {isUnlocked && (
+                      <div className="space-y-3">
+                        {section.data.metrics.slice(2).map((metric, idx) => (
+                          <MetricCard key={idx + 2} metric={metric} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* RIGHT PANEL - Map */}
+        <div className="lg:w-[60%] bg-background p-6 lg:p-8 overflow-y-auto">
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-foreground mb-2">Competitive Landscape</h2>
+            <p className="text-sm text-muted-foreground">Your hotel and nearby competitors within 2 miles</p>
+          </div>
+
+          <Card className="overflow-hidden">
+            <div className="rounded-lg border border-border">
               {mapLoaded ? (
                 <CompetitorMap
                   hotelName={auditData.hotelInfo.name}
@@ -166,182 +290,16 @@ export const ResultsTeaserFullInteractive = () => {
                   state={auditData.hotelInfo.state}
                 />
               ) : (
-                <div className="flex items-center justify-center py-20">
+                <div className="flex items-center justify-center py-40">
                   <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading competitor map...</p>
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Loading competitor map...</p>
                   </div>
                 </div>
               )}
             </div>
           </Card>
         </div>
-
-        {/* Overall Score */}
-        <div className="mb-8">
-          <Card className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-8">
-            <div className="text-center">
-              <p className="text-indigo-100 text-sm font-medium mb-4">
-                OVERALL PERFORMANCE SCORE
-              </p>
-              <div className="flex justify-center mb-4">
-                <ScoreGauge grade={auditData.overallGrade} score={auditData.overallScore} size="lg" />
-              </div>
-              <div className="text-5xl font-bold mb-2">
-                {auditData.overallGrade}
-              </div>
-              <p className="text-indigo-100">
-                {auditData.overallScore}/100 points
-              </p>
-            </div>
-          </Card>
-        </div>
-
-        {/* Unlock All CTA */}
-        {!isAllUnlocked && (
-          <Card className="mb-8 bg-gradient-to-r from-indigo-500 to-purple-500 text-white p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="bg-white/20 p-3 rounded-lg">
-                  <Unlock className="w-8 h-8" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold mb-1">
-                    Unlock Your Complete Analysis
-                  </h3>
-                  <p className="text-indigo-100">
-                    Get instant access to all {sections.length} sections with detailed insights
-                  </p>
-                </div>
-              </div>
-              <Button
-                size="lg"
-                variant="secondary"
-                onClick={() => setShowEmailModal(true)}
-                className="bg-white text-indigo-600 hover:bg-indigo-50"
-              >
-                <Mail className="w-4 h-4 mr-2" />
-                Unlock All Sections
-              </Button>
-            </div>
-          </Card>
-        )}
-
-        {/* Section Cards */}
-        <div className="space-y-8">
-          {sections.map((section, index) => {
-            const Icon = sectionIcons[section.id as keyof typeof sectionIcons];
-            const isUnlocked = isAllUnlocked || unlockedSections.includes(section.id);
-            const showPreview = !isUnlocked;
-
-            return (
-              <Card key={section.id} className="overflow-hidden">
-                {/* Section Header */}
-                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 border-b">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-4">
-                      <div className="bg-indigo-100 p-3 rounded-lg">
-                        <Icon className="w-6 h-6 text-indigo-600" />
-                      </div>
-                      <div>
-                        <h2 className="text-2xl font-bold text-gray-900">
-                          {section.title}
-                        </h2>
-                        <p className="text-gray-600 mt-1">{section.description}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <ScoreGauge grade={section.data.score >= 80 ? 'A' : section.data.score >= 70 ? 'B+' : section.data.score >= 60 ? 'B' : section.data.score >= 50 ? 'C' : 'D'} score={section.data.score} size="sm" />
-                      {isUnlocked ? (
-                        <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium flex items-center gap-1">
-                          <CheckCircle className="w-4 h-4" />
-                          Unlocked
-                        </span>
-                      ) : (
-                        <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm font-medium flex items-center gap-1">
-                          <Lock className="w-4 h-4" />
-                          Locked
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Section Content */}
-                <div className="p-6">
-                  {/* Preview (first 2-3 metrics) */}
-                  <div className="grid md:grid-cols-2 gap-4 mb-6">
-                    {section.data.metrics
-                      .slice(0, showPreview ? 3 : undefined)
-                      .map((metric, idx) => (
-                        <MetricCard
-                          key={idx}
-                          metric={metric}
-                        />
-                      ))}
-                  </div>
-
-                  {/* Locked Overlay / Unlock Button */}
-                  {showPreview && (
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white to-white z-10 -mt-20"></div>
-                      <div className="relative z-20 pt-8 text-center">
-                        <div className="bg-white/80 backdrop-blur-sm rounded-lg p-6 inline-block">
-                          <Lock className="w-12 h-12 text-indigo-600 mx-auto mb-4" />
-                          <h3 className="text-xl font-bold mb-2">
-                            {section.data.metrics.length - 3} More Insights Locked
-                          </h3>
-                          <p className="text-gray-600 mb-4">
-                            Unlock to see detailed analysis and recommendations
-                          </p>
-                          <Button
-                            onClick={() => setShowEmailModal(true)}
-                            className="bg-indigo-600 hover:bg-indigo-700"
-                          >
-                            <Mail className="w-4 h-4 mr-2" />
-                            Unlock This Section
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Full Content (when unlocked) */}
-                  {isUnlocked && (
-                    <div className="mt-6">
-                      <p className="text-gray-600">
-                        Complete analysis for {section.title} with all metrics is now available.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </Card>
-            );
-          })}
-        </div>
-
-        {/* Final CTA */}
-        {!isAllUnlocked && (
-          <Card className="mt-12 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-8">
-            <div className="text-center max-w-2xl mx-auto">
-              <h2 className="text-3xl font-bold mb-4">
-                Ready for Your Complete Analysis?
-              </h2>
-              <p className="text-xl text-indigo-100 mb-6">
-                Unlock all {sections.length} sections and get your full 40-point performance audit
-              </p>
-              <Button
-                size="lg"
-                variant="secondary"
-                onClick={() => setShowEmailModal(true)}
-                className="bg-white text-indigo-600 hover:bg-indigo-50"
-              >
-                <Mail className="w-5 h-5 mr-2" />
-                Get My Full Report
-              </Button>
-            </div>
-          </Card>
-        )}
       </div>
 
       {/* Email Capture Modal */}
@@ -349,8 +307,8 @@ export const ResultsTeaserFullInteractive = () => {
         isOpen={showEmailModal}
         onClose={() => setShowEmailModal(false)}
         onSubmit={handleEmailSubmit}
-        hotelName={auditData.hotelInfo.name}
         section="all"
+        hotelName={auditData.hotelInfo.name}
       />
     </div>
   );
