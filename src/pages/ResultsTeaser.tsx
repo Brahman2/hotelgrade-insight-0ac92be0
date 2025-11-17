@@ -1,722 +1,339 @@
-// src/pages/ResultsTeaser.tsx
-// COMPLETE teaser page with ALL 6 sections + WORKING unlock flow
-// Created: November 16, 2025 - FULL INTERACTIVE VERSION
-
 import { useState } from "react";
-import { useParams } from "react-router-dom";
-import { MetricCard } from "@/components/audit/MetricCard";
-import { ScoreGauge } from "@/components/audit/ScoreGauge";
-import { EmailCaptureModal } from "@/components/audit/EmailCaptureModal";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  TrendingUp, 
-  AlertCircle, 
-  CheckCircle2, 
-  Mail,
-  Globe,
-  Star,
-  Share2,
-  Megaphone,
-  Calendar,
-  Trophy,
-  Rocket,
-  Clock,
-  Target,
+import { ScoreGauge } from "@/components/audit/ScoreGauge";
+import { MetricCard } from "@/components/audit/MetricCard";
+import { EmailCaptureModal } from "@/components/audit/EmailCaptureModal";
+import { CompetitorMap } from "@/components/CompetitorMap";
+import { mockAuditData } from "@/lib/mockData";
+import {
+  Lock,
   Unlock,
+  Mail,
+  TrendingUp,
+  Star,
+  Globe,
+  Search,
+  Hotel,
+  Camera,
+  Share2,
+  ShoppingCart,
+  Target,
+  MapPin,
+  ArrowRight,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
-import { MOCK_AUDIT_REPORT } from "@/lib/mockData";
-import type { SectionName } from "@/types/audit";
-import { PRIORITY_COLORS, EFFORT_LABELS } from "@/lib/constants/colors";
 
-export default function ResultsTeaser() {
-  const { hotelId } = useParams();
-  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
-  const [selectedSection, setSelectedSection] = useState<SectionName | "all" | null>(null);
-  
-  // Track which sections are unlocked
-  const [unlockedSections, setUnlockedSections] = useState<Set<SectionName | "all">>(new Set());
-  const [capturedEmail, setCapturedEmail] = useState<string | null>(null);
-  
-  const report = MOCK_AUDIT_REPORT;
+const ResultsTeaser = () => {
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [unlockedSections, setUnlockedSections] = useState<string[]>([]);
+  const [isAllUnlocked, setIsAllUnlocked] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
+  const [currentSection, setCurrentSection] = useState<string | null>(null);
 
-  const handleUnlockSection = (section: SectionName | "all") => {
-    setSelectedSection(section);
-    setIsEmailModalOpen(true);
-  };
+  // Use mock data
+  const auditData = mockAuditData;
 
   const handleEmailSubmit = async (email: string) => {
-    console.log("Email submitted:", email, "for section:", selectedSection);
+    setUserEmail(email);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Store email and unlock content
-    setCapturedEmail(email);
-    
-    if (selectedSection) {
-      if (selectedSection === "all") {
-        // Unlock everything
-        setUnlockedSections(new Set([
-          "all",
-          "digitalPresence",
-          "reputation", 
-          "socialMedia",
-          "advertising",
-          "booking",
-          "competitive"
-        ]));
-      } else {
-        // Unlock specific section
-        setUnlockedSections(prev => new Set(prev).add(selectedSection));
-      }
+    if (currentSection === "all") {
+      setIsAllUnlocked(true);
+      setUnlockedSections([
+        "google_business",
+        "reviews",
+        "website",
+        "ota",
+        "social",
+        "competitive",
+      ]);
+    } else if (currentSection) {
+      setUnlockedSections((prev) => [...prev, currentSection]);
     }
+    
+    setShowEmailModal(false);
+    setCurrentSection(null);
   };
 
-  // Helper to check if section is unlocked
-  const isSectionUnlocked = (section: SectionName) => {
-    return unlockedSections.has("all") || unlockedSections.has(section);
+  const sectionIcons = {
+    google_business: Globe,
+    reviews: Star,
+    website: Globe,
+    ota: Hotel,
+    social: Share2,
+    competitive: Target,
   };
 
-  const isEverythingUnlocked = unlockedSections.has("all");
+  const sections = [
+    {
+      id: "google_business",
+      title: "Google Business Profile",
+      description: "Your Google presence and local search visibility",
+      data: auditData.googleBusiness,
+    },
+    {
+      id: "reviews",
+      title: "Online Reviews",
+      description: "Review performance across all major platforms",
+      data: auditData.reviews,
+    },
+    {
+      id: "website",
+      title: "Website Performance",
+      description: "Technical performance and user experience analysis",
+      data: auditData.website,
+    },
+    {
+      id: "ota",
+      title: "OTA Presence",
+      description: "Online Travel Agency rankings and optimization",
+      data: auditData.ota,
+    },
+    {
+      id: "social",
+      title: "Social Media",
+      description: "Social media presence and engagement metrics",
+      data: auditData.social,
+    },
+    {
+      id: "competitive",
+      title: "Competitive Analysis",
+      description: "Market position and competitor insights",
+      data: auditData.competitive,
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 px-4">
-      <div className="max-w-7xl mx-auto space-y-8">
-        
-        {/* Success Banner - Show after email capture */}
-        {capturedEmail && (
-          <Card className="border-2 border-green-500 bg-gradient-to-r from-green-50 to-emerald-50">
-            <CardContent className="pt-6 pb-6">
-              <div className="flex items-center gap-3">
-                <CheckCircle2 className="w-8 h-8 text-green-600" />
-                <div>
-                  <h3 className="font-bold text-green-900 text-lg">
-                    Report Unlocked! 🎉
-                  </h3>
-                  <p className="text-sm text-green-700">
-                    Full analysis sent to <strong>{capturedEmail}</strong>. 
-                    {isEverythingUnlocked 
-                      ? " All sections unlocked below!" 
-                      : " Unlocked sections are highlighted in green below!"}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold mb-4">
+              Performance Audit Results
+            </h1>
+            <p className="text-xl text-indigo-100 mb-2">
+              {auditData.hotelInfo.name}
+            </p>
+            <p className="text-indigo-200">
+              {auditData.hotelInfo.city}, {auditData.hotelInfo.state}
+            </p>
+          </div>
 
-        {/* Header */}
-        <div className="text-center space-y-3">
-          <h1 className="text-4xl font-bold text-gray-900">
-            Hotel Performance Report
-          </h1>
-          <p className="text-lg text-gray-600">
-            {report.hotelName} • {report.city}, {report.state}
-          </p>
-          <Badge variant="outline" className="text-sm">
-            Generated: {new Date(report.generatedAt).toLocaleDateString()}
-          </Badge>
+          {/* Overall Score */}
+          <div className="mt-12 max-w-md mx-auto">
+            <Card className="bg-white/10 backdrop-blur-lg border-white/20 p-8">
+              <div className="text-center">
+                <p className="text-indigo-100 text-sm font-medium mb-4">
+                  OVERALL PERFORMANCE SCORE
+                </p>
+                <div className="flex justify-center mb-4">
+                  <ScoreGauge 
+                    score={auditData.overallScore} 
+                    grade={auditData.overallGrade}
+                    size="lg" 
+                  />
+                </div>
+                <div className="text-5xl font-bold mb-2">
+                  {auditData.overallGrade}
+                </div>
+                <p className="text-indigo-100">
+                  {auditData.overallScore}/100 points
+                </p>
+              </div>
+            </Card>
+          </div>
         </div>
+      </div>
 
-        {/* Executive Summary - Always Free */}
-        <Card className="border-2 border-indigo-200 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50">
-            <CardTitle className="text-2xl flex items-center gap-2">
-              <TrendingUp className="w-6 h-6 text-indigo-600" />
-              Executive Summary
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="grid md:grid-cols-2 gap-8">
-              
-              {/* Left: Score Gauge */}
-              <div className="flex flex-col items-center justify-center space-y-4">
-                <ScoreGauge 
-                  grade={report.executiveSummary.overallGrade}
-                  score={report.executiveSummary.overallScore}
-                  size="xl"
-                />
-                <div className="text-center">
-                  <p className="text-lg font-semibold text-gray-700">
-                    Overall Performance
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Rank #{report.executiveSummary.competitiveRank} of{" "}
-                    {report.executiveSummary.competitiveTotal} hotels
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Unlock All CTA */}
+        {!isAllUnlocked && (
+          <Card className="mb-8 bg-gradient-to-r from-indigo-500 to-purple-500 text-white p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="bg-white/20 p-3 rounded-lg">
+                  <Unlock className="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold mb-1">
+                    Unlock Your Complete Analysis
+                  </h3>
+                  <p className="text-indigo-100">
+                    Get instant access to all {sections.length} sections with detailed insights
                   </p>
                 </div>
               </div>
-
-              {/* Right: Strengths & Issues */}
-              <div className="space-y-6">
-                
-                {/* Strengths */}
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-green-700 flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5" />
-                    Top Strengths
-                  </h3>
-                  <ul className="space-y-2">
-                    {report.executiveSummary.strengths.map((strength, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm">
-                        <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">{strength}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Critical Issues */}
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-red-700 flex items-center gap-2">
-                    <AlertCircle className="w-5 h-5" />
-                    Critical Issues
-                  </h3>
-                  <ul className="space-y-2">
-                    {report.executiveSummary.criticalIssues.map((issue, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm">
-                        <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">{issue}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            {/* Key Finding */}
-            <div className="mt-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
-              <h4 className="font-semibold text-indigo-900 mb-2 flex items-center gap-2">
-                <Target className="w-5 h-5" />
-                Key Finding
-              </h4>
-              <p className="text-sm text-indigo-800 leading-relaxed">
-                {report.executiveSummary.keyFinding}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Section Previews - ALL 6 SECTIONS */}
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-900">
-              Detailed 40-Point Analysis
-            </h2>
-            {!isEverythingUnlocked && (
               <Button
-                onClick={() => handleUnlockSection("all")}
-                className="bg-indigo-600 hover:bg-indigo-700"
+                size="lg"
+                variant="secondary"
+                onClick={() => setShowEmailModal(true)}
+                className="bg-white text-indigo-600 hover:bg-indigo-50"
               >
                 <Mail className="w-4 h-4 mr-2" />
                 Unlock All Sections
               </Button>
-            )}
-          </div>
-
-          {/* 1. DIGITAL PRESENCE */}
-          <Card className={isSectionUnlocked("digitalPresence") ? "border-2 border-green-500" : ""}>
-            <CardHeader className="bg-gradient-to-r from-blue-50 to-cyan-50">
-              <div className="flex items-center justify-between flex-wrap gap-3">
-                <CardTitle className="flex items-center gap-3">
-                  <Globe className="w-6 h-6 text-blue-600" />
-                  Digital Presence
-                  <Badge className="bg-blue-500">
-                    {report.digitalPresence.score}/100
-                  </Badge>
-                  {isSectionUnlocked("digitalPresence") && (
-                    <Badge className="bg-green-500">
-                      <Unlock className="w-3 h-3 mr-1" />
-                      Unlocked
-                    </Badge>
-                  )}
-                </CardTitle>
-                {!isSectionUnlocked("digitalPresence") && (
-                  <Button
-                    onClick={() => handleUnlockSection("digitalPresence")}
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                  >
-                    <Mail className="w-4 h-4" />
-                    Unlock Full Analysis
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {(isSectionUnlocked("digitalPresence") 
-                  ? report.digitalPresence.metrics 
-                  : report.digitalPresence.metrics.slice(0, 3)
-                ).map((metric, i) => (
-                  <MetricCard
-                    key={i}
-                    metric={{
-                      ...metric,
-                      isLocked: isSectionUnlocked("digitalPresence") ? false : metric.isLocked,
-                      score: isSectionUnlocked("digitalPresence") ? (metric.score || 70) : metric.score,
-                    }}
-                    onUnlockClick={() => handleUnlockSection("digitalPresence")}
-                  />
-                ))}
-              </div>
-              {!isSectionUnlocked("digitalPresence") && (
-                <p className="text-sm text-gray-500 text-center mt-4">
-                  + {report.digitalPresence.metrics.length - 3} more metrics available with full report
-                </p>
-              )}
-            </CardContent>
+            </div>
           </Card>
+        )}
 
-          {/* 2. REPUTATION MANAGEMENT */}
-          <Card className={isSectionUnlocked("reputation") ? "border-2 border-green-500" : ""}>
-            <CardHeader className="bg-gradient-to-r from-yellow-50 to-amber-50">
-              <div className="flex items-center justify-between flex-wrap gap-3">
-                <CardTitle className="flex items-center gap-3">
-                  <Star className="w-6 h-6 text-yellow-600" />
-                  Reputation Management
-                  <Badge className="bg-green-500">
-                    {report.reputation.score}/100
-                  </Badge>
-                  {isSectionUnlocked("reputation") && (
-                    <Badge className="bg-green-500">
-                      <Unlock className="w-3 h-3 mr-1" />
-                      Unlocked
-                    </Badge>
-                  )}
-                </CardTitle>
-                {!isSectionUnlocked("reputation") && (
-                  <Button
-                    onClick={() => handleUnlockSection("reputation")}
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                  >
-                    <Mail className="w-4 h-4" />
-                    Unlock Full Analysis
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {(isSectionUnlocked("reputation")
-                  ? report.reputation.metrics
-                  : report.reputation.metrics.slice(0, 3)
-                ).map((metric, i) => (
-                  <MetricCard
-                    key={i}
-                    metric={{
-                      ...metric,
-                      isLocked: isSectionUnlocked("reputation") ? false : metric.isLocked,
-                      score: isSectionUnlocked("reputation") ? (metric.score || 75) : metric.score,
-                    }}
-                    onUnlockClick={() => handleUnlockSection("reputation")}
-                  />
-                ))}
-              </div>
-              {!isSectionUnlocked("reputation") && (
-                <p className="text-sm text-gray-500 text-center mt-4">
-                  + {report.reputation.metrics.length - 3} more metrics available
-                </p>
-              )}
-            </CardContent>
-          </Card>
+        {/* Section Cards */}
+        <div className="space-y-8">
+          {sections.map((section, index) => {
+            const Icon = sectionIcons[section.id as keyof typeof sectionIcons];
+            const isUnlocked = isAllUnlocked || unlockedSections.includes(section.id);
+            const showPreview = !isUnlocked;
 
-          {/* 3. SOCIAL MEDIA */}
-          <Card className={isSectionUnlocked("socialMedia") ? "border-2 border-green-500" : ""}>
-            <CardHeader className="bg-gradient-to-r from-pink-50 to-purple-50">
-              <div className="flex items-center justify-between flex-wrap gap-3">
-                <CardTitle className="flex items-center gap-3">
-                  <Share2 className="w-6 h-6 text-pink-600" />
-                  Social Media Performance
-                  <Badge className="bg-amber-500">
-                    {report.socialMedia.score}/100
-                  </Badge>
-                  {isSectionUnlocked("socialMedia") && (
-                    <Badge className="bg-green-500">
-                      <Unlock className="w-3 h-3 mr-1" />
-                      Unlocked
-                    </Badge>
-                  )}
-                </CardTitle>
-                {!isSectionUnlocked("socialMedia") && (
-                  <Button
-                    onClick={() => handleUnlockSection("socialMedia")}
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                  >
-                    <Mail className="w-4 h-4" />
-                    Unlock Full Analysis
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="grid md:grid-cols-2 gap-4">
-                {(isSectionUnlocked("socialMedia")
-                  ? report.socialMedia.metrics
-                  : report.socialMedia.metrics.slice(0, 2)
-                ).map((metric, i) => (
-                  <MetricCard
-                    key={i}
-                    metric={{
-                      ...metric,
-                      isLocked: isSectionUnlocked("socialMedia") ? false : metric.isLocked,
-                      score: isSectionUnlocked("socialMedia") ? (metric.score || 65) : metric.score,
-                    }}
-                    onUnlockClick={() => handleUnlockSection("socialMedia")}
-                  />
-                ))}
-              </div>
-              {!isSectionUnlocked("socialMedia") && (
-                <p className="text-sm text-gray-500 text-center mt-4">
-                  + {report.socialMedia.metrics.length - 2} more metrics available
-                </p>
-              )}
-            </CardContent>
-          </Card>
+            return (
+              <Card key={section.id} className="overflow-hidden">
+                {/* Section Header */}
+                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 border-b">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-indigo-100 p-3 rounded-lg">
+                        <Icon className="w-6 h-6 text-indigo-600" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-900">
+                          {section.title}
+                        </h2>
+                        <p className="text-gray-600 mt-1">{section.description}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <ScoreGauge 
+                        score={section.data.score || 0} 
+                        grade="B" 
+                        size="sm" 
+                      />
+                      {isUnlocked ? (
+                        <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium flex items-center gap-1">
+                          <CheckCircle className="w-4 h-4" />
+                          Unlocked
+                        </span>
+                      ) : (
+                        <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm font-medium flex items-center gap-1">
+                          <Lock className="w-4 h-4" />
+                          Locked
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
 
-          {/* 4. ADVERTISING & PAID MEDIA */}
-          <Card className={isSectionUnlocked("advertising") ? "border-2 border-green-500" : ""}>
-            <CardHeader className="bg-gradient-to-r from-orange-50 to-red-50">
-              <div className="flex items-center justify-between flex-wrap gap-3">
-                <CardTitle className="flex items-center gap-3">
-                  <Megaphone className="w-6 h-6 text-orange-600" />
-                  Advertising & Paid Media
-                  <Badge className="bg-amber-500">
-                    {report.advertising.score}/100
-                  </Badge>
-                  {isSectionUnlocked("advertising") && (
-                    <Badge className="bg-green-500">
-                      <Unlock className="w-3 h-3 mr-1" />
-                      Unlocked
-                    </Badge>
-                  )}
-                </CardTitle>
-                {!isSectionUnlocked("advertising") && (
-                  <Button
-                    onClick={() => handleUnlockSection("advertising")}
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                  >
-                    <Mail className="w-4 h-4" />
-                    Unlock Full Analysis
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {(isSectionUnlocked("advertising")
-                  ? report.advertising.metrics
-                  : [
-                      report.advertising.metrics[0],
-                      { score: null, color: 'red' as const, label: 'Meta Ads Presence', isLocked: true, insight: 'Unlock to see Facebook & Instagram ads' },
-                      { score: null, color: 'red' as const, label: 'Metasearch Visibility', isLocked: true, insight: 'Unlock to see Google Hotel Ads' },
-                    ]
-                ).map((metric, i) => (
-                  <MetricCard
-                    key={i}
-                    metric={{
-                      ...metric,
-                      isLocked: isSectionUnlocked("advertising") ? false : metric.isLocked,
-                      score: isSectionUnlocked("advertising") ? (metric.score || 55) : metric.score,
-                    }}
-                    onUnlockClick={() => handleUnlockSection("advertising")}
-                  />
-                ))}
-              </div>
-              {!isSectionUnlocked("advertising") && (
-                <p className="text-sm text-gray-500 text-center mt-4">
-                  + {report.advertising.metrics.length - 3} more metrics available
-                </p>
-              )}
-            </CardContent>
-          </Card>
+                {/* Section Content */}
+                <div className="p-6">
+                  {/* Preview (first 2-3 metrics) */}
+                  <div className="grid md:grid-cols-2 gap-4 mb-6">
+                    {section.data.metrics
+                      .slice(0, showPreview ? 3 : undefined)
+                      .map((metric, idx) => (
+                        <MetricCard
+                          key={idx}
+                          metric={{
+                            ...metric,
+                            isLocked: showPreview && idx >= 2
+                          }}
+                        />
+                      ))}
+                  </div>
 
-          {/* 5. BOOKING & DISTRIBUTION */}
-          <Card className={isSectionUnlocked("booking") ? "border-2 border-green-500" : ""}>
-            <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50">
-              <div className="flex items-center justify-between flex-wrap gap-3">
-                <CardTitle className="flex items-center gap-3">
-                  <Calendar className="w-6 h-6 text-green-600" />
-                  Booking & Distribution
-                  <Badge className="bg-green-500">
-                    {report.booking.score}/100
-                  </Badge>
-                  {isSectionUnlocked("booking") && (
-                    <Badge className="bg-green-500">
-                      <Unlock className="w-3 h-3 mr-1" />
-                      Unlocked
-                    </Badge>
-                  )}
-                </CardTitle>
-                {!isSectionUnlocked("booking") && (
-                  <Button
-                    onClick={() => handleUnlockSection("booking")}
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                  >
-                    <Mail className="w-4 h-4" />
-                    Unlock Full Analysis
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="grid md:grid-cols-2 gap-4">
-                {(isSectionUnlocked("booking")
-                  ? report.booking.metrics
-                  : report.booking.metrics.slice(0, 2)
-                ).map((metric, i) => (
-                  <MetricCard
-                    key={i}
-                    metric={{
-                      ...metric,
-                      isLocked: isSectionUnlocked("booking") ? false : metric.isLocked,
-                      score: isSectionUnlocked("booking") ? (metric.score || 75) : metric.score,
-                    }}
-                    onUnlockClick={() => handleUnlockSection("booking")}
-                  />
-                ))}
-              </div>
-              {!isSectionUnlocked("booking") && (
-                <p className="text-sm text-gray-500 text-center mt-4">
-                  + {report.booking.metrics.length - 2} more metrics available
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* 6. COMPETITIVE INTELLIGENCE */}
-          <Card className={isSectionUnlocked("competitive") ? "border-2 border-green-500" : ""}>
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-indigo-50">
-              <div className="flex items-center justify-between flex-wrap gap-3">
-                <CardTitle className="flex items-center gap-3">
-                  <Trophy className="w-6 h-6 text-purple-600" />
-                  Competitive Intelligence
-                  <Badge className="bg-amber-500">
-                    {report.competitive.score}/100
-                  </Badge>
-                  {isSectionUnlocked("competitive") && (
-                    <Badge className="bg-green-500">
-                      <Unlock className="w-3 h-3 mr-1" />
-                      Unlocked
-                    </Badge>
-                  )}
-                </CardTitle>
-                {!isSectionUnlocked("competitive") && (
-                  <Button
-                    onClick={() => handleUnlockSection("competitive")}
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                  >
-                    <Mail className="w-4 h-4" />
-                    Unlock Full Analysis
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="grid md:grid-cols-2 gap-4">
-                {(isSectionUnlocked("competitive")
-                  ? report.competitive.metrics
-                  : report.competitive.metrics.slice(0, 2)
-                ).map((metric, i) => (
-                  <MetricCard
-                    key={i}
-                    metric={{
-                      ...metric,
-                      isLocked: isSectionUnlocked("competitive") ? false : metric.isLocked,
-                      score: isSectionUnlocked("competitive") ? (metric.score || 70) : metric.score,
-                    }}
-                    onUnlockClick={() => handleUnlockSection("competitive")}
-                  />
-                ))}
-              </div>
-              
-              {/* Competitor Preview - Top 5 or All */}
-              <div className="mt-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
-                <h4 className="font-semibold text-purple-900 mb-3 flex items-center gap-2">
-                  <Trophy className="w-5 h-5" />
-                  {isSectionUnlocked("competitive") ? "All Competitors" : "Top 5 Competitors (Preview)"}
-                </h4>
-                <div className="space-y-2">
-                  {(isSectionUnlocked("competitive") 
-                    ? report.competitors 
-                    : report.competitors.slice(0, 5)
-                  ).map((comp, i) => (
-                    <div key={i} className="flex items-center justify-between text-sm p-2 bg-white rounded">
-                      <div className="flex items-center gap-3">
-                        <Badge variant="outline" className="w-8 h-8 flex items-center justify-center">
-                          #{comp.rank}
-                        </Badge>
-                        <div>
-                          <p className="font-medium text-gray-900">{comp.name}</p>
-                          <p className="text-xs text-gray-500">{comp.distance} mi away</p>
+                  {/* Locked Overlay / Unlock Button */}
+                  {showPreview && (
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white to-white z-10 -mt-20"></div>
+                      <div className="relative z-20 pt-8 text-center">
+                        <div className="bg-white/80 backdrop-blur-sm rounded-lg p-6 inline-block">
+                          <Lock className="w-12 h-12 text-indigo-600 mx-auto mb-4" />
+                          <h3 className="text-xl font-bold mb-2">
+                            {section.data.metrics.length - 3} More Insights Locked
+                          </h3>
+                          <p className="text-gray-600 mb-4">
+                            Unlock to see detailed analysis and recommendations
+                          </p>
+                          <Button
+                            onClick={() => setShowEmailModal(true)}
+                            className="bg-indigo-600 hover:bg-indigo-700"
+                          >
+                            <Mail className="w-4 h-4 mr-2" />
+                            Unlock This Section
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                        <span className="font-semibold">{comp.rating}</span>
-                        <span className="text-gray-400">({comp.reviewCount})</span>
-                      </div>
                     </div>
-                  ))}
+                  )}
+
+                  {/* Full Content (when unlocked) */}
+                  {isUnlocked && (
+                    <div className="space-y-6 mt-6">
+                      {/* Additional unlocked content */}
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                        <p className="text-green-800 text-center font-medium">
+                          Full section details unlocked! Check your email for the complete analysis.
+                        </p>
+                      </div>
+
+                      {/* Special: Competitor Map for Competitive Analysis Section */}
+                      {section.id === "competitive" && (
+                        <div className="mt-8">
+                          <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                            <MapPin className="w-5 h-5 text-indigo-600" />
+                            Competitor Location Analysis
+                          </h3>
+                          <CompetitorMap
+                            hotelName={auditData.hotelInfo.name}
+                            city={auditData.hotelInfo.city}
+                            state={auditData.hotelInfo.state}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-                {!isSectionUnlocked("competitive") && (
-                  <p className="text-sm text-purple-700 text-center mt-4">
-                    + {report.competitors.length - 5} more competitors with detailed comparison
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+              </Card>
+            );
+          })}
         </div>
 
-        {/* Action Plan - Show when unlocked */}
-        {isEverythingUnlocked ? (
-          <Card className="border-2 border-green-500">
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50">
-              <CardTitle className="flex items-center gap-2">
-                <Rocket className="w-6 h-6 text-purple-600" />
-                Complete Action Plan
-                <Badge className="bg-green-500">
-                  <Unlock className="w-3 h-3 mr-1" />
-                  Unlocked
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="grid md:grid-cols-2 gap-4">
-                {report.actionPlan.map((item, i) => (
-                  <div key={i} className="p-4 border rounded-lg space-y-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <Badge className={PRIORITY_COLORS[item.priority].bg + ' ' + PRIORITY_COLORS[item.priority].text}>
-                        {item.priority.toUpperCase()}
-                      </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        {EFFORT_LABELS[item.effort]}
-                      </Badge>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900 mb-1">{item.action}</p>
-                      <p className="text-sm text-gray-600 mb-2">{item.impact}</p>
-                      <div className="flex items-center gap-2 text-xs text-gray-500">
-                        <Clock className="w-3 h-3" />
-                        {item.timeline}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="border-2 border-purple-200">
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50">
-              <CardTitle className="flex items-center gap-2">
-                <Rocket className="w-6 h-6 text-purple-600" />
-                Prioritized Action Plan (Preview)
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="grid md:grid-cols-2 gap-4">
-                {report.actionPlan.slice(0, 2).map((item, i) => (
-                  <div key={i} className="p-4 border rounded-lg space-y-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <Badge className={PRIORITY_COLORS[item.priority].bg + ' ' + PRIORITY_COLORS[item.priority].text}>
-                        {item.priority.toUpperCase()}
-                      </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        {EFFORT_LABELS[item.effort]}
-                      </Badge>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900 mb-1">{item.action}</p>
-                      <p className="text-sm text-gray-600 mb-2">{item.impact}</p>
-                      <div className="flex items-center gap-2 text-xs text-gray-500">
-                        <Clock className="w-3 h-3" />
-                        {item.timeline}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              {/* Blurred locked items */}
-              <div className="mt-6 relative">
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/80 to-white z-10 flex items-end justify-center pb-8">
-                  <Button
-                    onClick={() => handleUnlockSection("all")}
-                    size="lg"
-                    className="bg-purple-600 hover:bg-purple-700"
-                  >
-                    <Mail className="w-5 h-5 mr-2" />
-                    Unlock Full Action Plan ({report.actionPlan.length - 2} More Items)
-                  </Button>
-                </div>
-                <div className="blur-sm opacity-50 space-y-3">
-                  <div className="h-24 bg-gray-200 rounded-lg"></div>
-                  <div className="h-24 bg-gray-200 rounded-lg"></div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Final CTA - Only show if not everything unlocked */}
-        {!isEverythingUnlocked && (
-          <Card className="border-2 border-indigo-300 bg-gradient-to-br from-indigo-50 to-purple-50 shadow-xl">
-            <CardContent className="pt-8 pb-8 text-center space-y-6">
-              <div className="flex justify-center">
-                <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center">
-                  <Rocket className="w-8 h-8 text-indigo-600" />
-                </div>
-              </div>
-              <div>
-                <h3 className="text-3xl font-bold text-gray-900 mb-2">
-                  Ready for the Complete 40-Point Audit?
-                </h3>
-                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                  Get instant access to all metrics, full competitor analysis, and {report.actionPlan.length} prioritized action items.
-                </p>
-              </div>
-              
+        {/* Final CTA */}
+        {!isAllUnlocked && (
+          <Card className="mt-12 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-8">
+            <div className="text-center max-w-2xl mx-auto">
+              <h2 className="text-3xl font-bold mb-4">
+                Ready for Your Complete Analysis?
+              </h2>
+              <p className="text-xl text-indigo-100 mb-6">
+                Unlock all {sections.length} sections and get your full 40-point performance audit
+              </p>
               <Button
-                onClick={() => handleUnlockSection("all")}
                 size="lg"
-                className="bg-indigo-600 hover:bg-indigo-700 text-lg px-8"
+                variant="secondary"
+                onClick={() => setShowEmailModal(true)}
+                className="bg-white text-indigo-600 hover:bg-indigo-50"
               >
                 <Mail className="w-5 h-5 mr-2" />
-                Unlock Complete Report
+                Get My Full Report
               </Button>
-
-              <p className="text-sm text-gray-500">
-                ✉️ Delivered to your inbox in 60 seconds • No credit card required
-              </p>
-            </CardContent>
+            </div>
           </Card>
         )}
-
       </div>
 
       {/* Email Capture Modal */}
       <EmailCaptureModal
-        isOpen={isEmailModalOpen}
-        onClose={() => setIsEmailModalOpen(false)}
+        isOpen={showEmailModal}
+        onClose={() => {
+          setShowEmailModal(false);
+          setCurrentSection(null);
+        }}
         onSubmit={handleEmailSubmit}
-        section={selectedSection}
-        hotelName={report.hotelName}
+        section={currentSection as any}
+        hotelName={auditData.hotelInfo.name}
       />
     </div>
   );
-}
+};
+
+export default ResultsTeaser;

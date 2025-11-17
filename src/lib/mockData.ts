@@ -751,3 +751,20 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
   generatedAt: new Date().toISOString(),
   isFullReportUnlocked: false,
 };
+
+// Adapter for components that expect the old structure
+export const mockAuditData = {
+  hotelInfo: {
+    name: MOCK_AUDIT_REPORT.hotelName,
+    city: MOCK_AUDIT_REPORT.city,
+    state: MOCK_AUDIT_REPORT.state,
+  },
+  overallScore: MOCK_AUDIT_REPORT.executiveSummary.overallScore,
+  overallGrade: MOCK_AUDIT_REPORT.executiveSummary.overallGrade,
+  googleBusiness: MOCK_AUDIT_REPORT.digitalPresence,
+  reviews: MOCK_AUDIT_REPORT.reputation,
+  website: MOCK_AUDIT_REPORT.digitalPresence,
+  ota: MOCK_AUDIT_REPORT.booking,
+  social: MOCK_AUDIT_REPORT.socialMedia,
+  competitive: MOCK_AUDIT_REPORT.competitive,
+};
