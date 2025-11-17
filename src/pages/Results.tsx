@@ -47,7 +47,6 @@ const Results = () => {
     ? { lat: targetHotel.lat, lng: targetHotel.lng }
     : { lat: 33.6415, lng: -117.9187 };
 
-  // ... keep existing code (categories array)
   const categories = [
     {
       icon: Star,
@@ -58,8 +57,17 @@ const Results = () => {
       topCompetitor: 85,
       keyFinding: "Strong profile with regular updates and high engagement",
       details: {
-        metrics: ["Profile completeness: 95%", "Weekly posts: 3-4 times", "Response rate: 98%", "Photos updated: Monthly"],
-        actionItems: ["Add virtual tour feature", "Enable messaging for instant booking", "Create special offers section"],
+        metrics: [
+          "Profile completeness: 95%",
+          "Weekly posts: 3-4 times",
+          "Response rate: 98%",
+          "Photos updated: Monthly",
+        ],
+        actionItems: [
+          "Add virtual tour feature",
+          "Enable messaging for instant booking",
+          "Create special offers section",
+        ],
       },
     },
     {
@@ -122,9 +130,9 @@ const Results = () => {
           "Citation score: 87%",
         ],
         actionItems: [
-          "Target long-tail keywords",
-          "Build more local backlinks",
-          "Update GMB categories",
+          "Claim missing local citations",
+          "Create location-specific content",
+          "Build local backlinks",
         ],
       },
     },
@@ -133,9 +141,9 @@ const Results = () => {
       name: "OTA Presence",
       score: 79,
       status: "Competitive" as const,
-      marketAverage: 76,
+      marketAverage: 73,
       topCompetitor: 86,
-      keyFinding: "Active on major platforms but pricing could be optimized",
+      keyFinding: "Good coverage but pricing strategy needs work",
       details: {
         metrics: [
           "Platforms: 6 active listings",
@@ -264,6 +272,7 @@ const Results = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Split Screen Layout */}
       <div className="flex flex-col lg:flex-row min-h-screen">
         {/* LEFT PANEL */}
         <div className="lg:w-[40%] bg-muted/30 p-6 lg:p-8 overflow-y-auto">
@@ -283,8 +292,12 @@ const Results = () => {
                   {formData.city}, {formData.state}
                 </p>
                 <div className="space-y-1">
-                  <p className="text-lg font-semibold text-foreground">Rank #{ranking} of {totalHotels}</p>
-                  <p className="text-sm text-muted-foreground">Top {percentile}% in your market</p>
+                  <p className="text-lg font-semibold text-foreground">
+                    Rank #{ranking} of {totalHotels}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Top {percentile}% in your market
+                  </p>
                 </div>
               </div>
             </div>
@@ -295,9 +308,21 @@ const Results = () => {
           <div className="space-y-4 mb-8">
             <h2 className="text-xl font-semibold text-foreground">Quick Insights</h2>
             <div className="space-y-3">
-              <QuickInsight title="✓ Your Strengths" variant="success" items={["Google Business Profile: Leading market", "Direct Booking: Strong performance"]} />
-              <QuickInsight title="⚠️ Opportunity Gaps" variant="warning" items={["Social Media: Below average", "Website Speed: Needs optimization"]} />
-              <QuickInsight title="📊 Market Position" variant="info" items={[`${totalHotels} hotels analyzed`, "5 points behind #1"]} />
+              <QuickInsight
+                title="✓ Your Strengths"
+                variant="success"
+                items={["Google Business Profile: Leading market", "Direct Booking: Strong performance"]}
+              />
+              <QuickInsight
+                title="⚠️ Opportunity Gaps"
+                variant="warning"
+                items={["Social Media: Below average engagement", "Website Speed: Needs optimization"]}
+              />
+              <QuickInsight
+                title="📊 Market Position"
+                variant="info"
+                items={[`${totalHotels} hotels analyzed`, "5 points behind #1 competitor"]}
+              />
             </div>
           </div>
 
@@ -315,22 +340,49 @@ const Results = () => {
           </div>
         </div>
 
-        {/* RIGHT PANEL - Map */}
+        {/* RIGHT PANEL */}
         <div className="lg:w-[60%] bg-background p-6 lg:p-8 overflow-y-auto">
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-foreground mb-2">Competitive Landscape</h2>
-            <p className="text-sm text-muted-foreground">Your hotel and nearby competitors within 2 miles</p>
+            <p className="text-sm text-muted-foreground">
+              Your hotel and nearby competitors within 2 miles
+            </p>
           </div>
 
           <Card className="p-4">
             <div className="rounded-lg overflow-hidden border border-border">
-              <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ""} onLoad={() => setIsScriptLoaded(true)}>
+              <LoadScript
+                googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ""}
+                onLoad={() => setIsScriptLoaded(true)}
+              >
                 {isScriptLoaded && (
-                  <GoogleMap mapContainerStyle={{ width: "100%", height: "600px" }} center={hotelCenter} zoom={14}>
+                  <GoogleMap
+                    mapContainerStyle={{ width: "100%", height: "600px" }}
+                    center={hotelCenter}
+                    zoom={14}
+                    options={{
+                      disableDefaultUI: false,
+                      zoomControl: true,
+                      styles: [
+                        {
+                          featureType: "poi",
+                          elementType: "labels",
+                          stylers: [{ visibility: "off" }],
+                        },
+                      ],
+                    }}
+                  >
                     {targetHotel && (
                       <Marker
                         position={{ lat: targetHotel.lat, lng: targetHotel.lng }}
-                        icon={{ path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z", fillColor: "#0EA5E9", fillOpacity: 1, strokeWeight: 3, strokeColor: "#ffffff", scale: 2.5 }}
+                        icon={{
+                          path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
+                          fillColor: "#0EA5E9",
+                          fillOpacity: 1,
+                          strokeWeight: 3,
+                          strokeColor: "#ffffff",
+                          scale: 2.5,
+                        }}
                         title={targetHotel.name}
                       />
                     )}
@@ -338,7 +390,14 @@ const Results = () => {
                       <Marker
                         key={index}
                         position={{ lat: competitor.lat, lng: competitor.lng }}
-                        icon={{ path: window.google.maps.SymbolPath.CIRCLE, fillColor: "#EF4444", fillOpacity: 1, strokeWeight: 2, strokeColor: "#ffffff", scale: 8 }}
+                        icon={{
+                          path: window.google.maps.SymbolPath.CIRCLE,
+                          fillColor: "#EF4444",
+                          fillOpacity: 1,
+                          strokeWeight: 2,
+                          strokeColor: "#ffffff",
+                          scale: 8,
+                        }}
                         title={`${competitor.name} - ${competitor.rating}★`}
                       />
                     ))}
@@ -360,6 +419,46 @@ const Results = () => {
               </div>
             </div>
           </Card>
+        </div>
+      </div>
+
+      {/* Bottom Section */}
+      <div className="max-w-7xl mx-auto px-4 py-12 space-y-8">
+        <Separator />
+        <div className="space-y-6">
+          <h2 className="text-3xl font-bold text-foreground">Detailed Category Analysis</h2>
+          <div className="grid gap-6">
+            {categories.map((category, index) => (
+              <CategoryCard key={index} {...category} />
+            ))}
+          </div>
+        </div>
+        <Separator className="my-8" />
+        <div className="space-y-6">
+          <h2 className="text-3xl font-bold text-foreground">Get the Complete Picture</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            <UpgradeCard
+              title="Full Detailed Report"
+              price="$299"
+              features={["60+ page PDF with deep analysis", "Comprehensive competitor analysis", "Revenue opportunity calculator", "Custom marketing roadmap"]}
+              buttonText="Purchase Report"
+              variant="premium"
+            />
+            <UpgradeCard
+              title="Strategy Consultation"
+              price="$499"
+              features={["60-minute video call with expert", "Personalized strategy session", "Priority action recommendations", "Follow-up email summary"]}
+              buttonText="Book Consultation"
+              variant="consultation"
+            />
+            <UpgradeCard
+              title="Premium Plus Package"
+              price="$1,499"
+              features={["Full report + consultation + 3 months support", "Monthly check-in calls", "Ongoing strategy adjustments", "Direct access to support team"]}
+              buttonText="Learn More"
+              variant="premium"
+            />
+          </div>
         </div>
       </div>
     </div>
