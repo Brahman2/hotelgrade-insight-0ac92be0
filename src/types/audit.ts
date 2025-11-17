@@ -43,6 +43,7 @@ export interface ExecutiveSummary {
   competitiveTotal: number;
   strengths: string[];
   criticalIssues: string[];
+  quickWins?: string[];
   keyFinding: string;
 }
 
