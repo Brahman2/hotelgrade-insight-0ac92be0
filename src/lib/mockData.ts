@@ -26,13 +26,13 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
       "Limited metasearch visibility",
       "Inconsistent review response rate",
     ],
-    keyFinding:
-      "Your hotel ranks #3 of 12 competitors with strong reviews but significant untapped potential in direct booking optimization. Improving website speed and metasearch presence could increase direct revenue by 15-25%.",
     quickWins: [
       "Respond to unanswered reviews (2-hour task)",
       "Optimize website images (4-hour task)",
       "Add virtual tour to Google Business (1-day task)",
     ],
+    keyFinding:
+      "Your hotel ranks #3 of 12 competitors with strong reviews but significant untapped potential in direct booking optimization. Improving website speed and metasearch presence could increase direct revenue by 15-25%.",
   },
 
   digitalPresence: {
