@@ -31,7 +31,7 @@ interface CompetitorMapProps {
 // 🔑 ADD YOUR GOOGLE MAPS API KEY HERE
 // Get it from: https://console.cloud.google.com/google/maps-apis
 // OR from your Railway environment variables (same key you use there)
-const GOOGLE_MAPS_API_KEY = "YOUR_API_KEY_HERE"; // ⬅️ REPLACE THIS
+const GOOGLE_MAPS_API_KEY = "AIzaSyB7TPyciCLKNs8Ukp_8q9xEdzYycJa7D3M"; // ⬅️ REPLACE THIS
 
 export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) => {
   const [loading, setLoading] = useState(true);
@@ -97,9 +97,7 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
     borderRadius: "8px",
   };
 
-  const center = target
-    ? { lat: target.lat, lng: target.lng }
-    : { lat: 41.8781, lng: -87.6298 }; // Default to Chicago
+  const center = target ? { lat: target.lat, lng: target.lng } : { lat: 41.8781, lng: -87.6298 }; // Default to Chicago
 
   const circleOptions = {
     strokeColor: "#667eea",
@@ -115,12 +113,12 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
     return (
       <Card className="p-8 bg-yellow-50 border-yellow-200">
         <h3 className="font-semibold text-yellow-800 mb-2">⚠️ Google Maps API Key Required</h3>
-        <p className="text-yellow-700 mb-4">
-          Please add your Google Maps API key to CompetitorMap.tsx (line 33)
-        </p>
+        <p className="text-yellow-700 mb-4">Please add your Google Maps API key to CompetitorMap.tsx (line 33)</p>
         <ol className="text-sm text-yellow-700 space-y-1 list-decimal list-inside">
           <li>Open CompetitorMap.tsx in Lovable</li>
-          <li>Find line 33: <code className="bg-yellow-100 px-1">const GOOGLE_MAPS_API_KEY = "YOUR_API_KEY_HERE"</code></li>
+          <li>
+            Find line 33: <code className="bg-yellow-100 px-1">const GOOGLE_MAPS_API_KEY = "YOUR_API_KEY_HERE"</code>
+          </li>
           <li>Replace with your actual API key from Railway or Google Cloud Console</li>
           <li>Save and refresh</li>
         </ol>
@@ -147,9 +145,7 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
       <Card className="p-8">
         <div className="flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-          <p className="ml-4 text-gray-600">
-            {!isLoaded ? "Loading Google Maps..." : "Finding nearby competitors..."}
-          </p>
+          <p className="ml-4 text-gray-600">{!isLoaded ? "Loading Google Maps..." : "Finding nearby competitors..."}</p>
         </div>
       </Card>
     );
@@ -159,10 +155,7 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
     return (
       <Card className="p-8 bg-red-50 border-red-200">
         <p className="text-red-600">Error: {error}</p>
-        <button
-          onClick={fetchCompetitors}
-          className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-        >
+        <button onClick={fetchCompetitors} className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
           Retry
         </button>
       </Card>
@@ -249,22 +242,15 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
                 <div className="flex items-center gap-1">
                   <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                   <span className="font-medium">{selectedCompetitor.rating.toFixed(1)}</span>
-                  <span className="text-sm text-gray-500">
-                    ({selectedCompetitor.reviews} reviews)
-                  </span>
+                  <span className="text-sm text-gray-500">({selectedCompetitor.reviews} reviews)</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Navigation className="w-4 h-4 text-indigo-600" />
-                  <span className="text-sm font-medium">
-                    {selectedCompetitor.distance_miles} mi away
-                  </span>
+                  <span className="text-sm font-medium">{selectedCompetitor.distance_miles} mi away</span>
                 </div>
               </div>
             </div>
-            <button
-              onClick={() => setSelectedCompetitor(null)}
-              className="text-gray-400 hover:text-gray-600"
-            >
+            <button onClick={() => setSelectedCompetitor(null)} className="text-gray-400 hover:text-gray-600">
               ✕
             </button>
           </div>
@@ -289,16 +275,16 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
                     <span className="text-xs">{competitor.rating.toFixed(1)}</span>
                   </div>
                   <span className="text-xs text-gray-500">•</span>
-                  <span className="text-xs text-gray-600">
-                    {competitor.distance_miles} mi
-                  </span>
+                  <span className="text-xs text-gray-600">{competitor.distance_miles} mi</span>
                 </div>
               </div>
               <div
                 className={`px-2 py-1 rounded text-xs font-medium ${
-                  competitor.rating >= 4.5 ? "bg-red-100 text-red-700" : 
-                  competitor.rating >= 4.0 ? "bg-yellow-100 text-yellow-700" : 
-                  "bg-green-100 text-green-700"
+                  competitor.rating >= 4.5
+                    ? "bg-red-100 text-red-700"
+                    : competitor.rating >= 4.0
+                      ? "bg-yellow-100 text-yellow-700"
+                      : "bg-green-100 text-green-700"
                 }`}
               >
                 {competitor.rating >= 4.5 ? "High Rated" : competitor.rating >= 4.0 ? "Competitive" : "Lower Rated"}
