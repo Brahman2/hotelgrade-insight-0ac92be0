@@ -150,10 +150,14 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
             {target && isScriptLoaded && (
               <Marker
                 position={{ lat: target.lat, lng: target.lng }}
-                icon={{
-                  url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-                  scaledSize: new google.maps.Size(40, 40),
-                }}
+                icon={
+                  (isScriptLoaded && (window as any).google?.maps?.Size)
+                    ? {
+                        url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+                        scaledSize: new (window as any).google.maps.Size(40, 40),
+                      }
+                    : { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
+                }
                 title={target.name}
               />
             )}
@@ -163,13 +167,17 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
               <Marker
                 key={competitor.place_id || index}
                 position={{ lat: competitor.lat, lng: competitor.lng }}
-                icon={{
-                  url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-                  scaledSize: new google.maps.Size(
-                    competitor.rating >= 4.5 ? 40 : competitor.rating >= 4.0 ? 35 : 30,
-                    competitor.rating >= 4.5 ? 40 : competitor.rating >= 4.0 ? 35 : 30
-                  ),
-                }}
+                icon={
+                  (isScriptLoaded && (window as any).google?.maps?.Size)
+                    ? {
+                        url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                        scaledSize: new (window as any).google.maps.Size(
+                          competitor.rating >= 4.5 ? 40 : competitor.rating >= 4.0 ? 35 : 30,
+                          competitor.rating >= 4.5 ? 40 : competitor.rating >= 4.0 ? 35 : 30
+                        ),
+                      }
+                    : { url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png" }
+                }
                 title={competitor.name}
                 onClick={() => setSelectedCompetitor(competitor)}
               />
