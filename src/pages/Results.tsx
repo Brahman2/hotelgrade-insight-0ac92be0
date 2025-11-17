@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -34,7 +34,6 @@ const Results = () => {
     return null;
   }
 
-  // Mock data (replace with actual analysis results)
   const grade = "B+";
   const score = 82;
   const ranking = 3;
@@ -44,11 +43,11 @@ const Results = () => {
   const competitors = formData.competitors || [];
   const targetHotel = formData.targetHotel;
   
-  // Use target hotel location if available, otherwise use default
   const hotelCenter = targetHotel 
     ? { lat: targetHotel.lat, lng: targetHotel.lng }
     : { lat: 33.6415, lng: -117.9187 };
 
+  // ... keep existing code (categories array)
   const categories = [
     {
       icon: Star,
@@ -59,17 +58,8 @@ const Results = () => {
       topCompetitor: 85,
       keyFinding: "Strong profile with regular updates and high engagement",
       details: {
-        metrics: [
-          "Profile completeness: 95%",
-          "Weekly posts: 3-4 times",
-          "Response rate: 98%",
-          "Photos updated: Monthly",
-        ],
-        actionItems: [
-          "Add virtual tour feature",
-          "Enable messaging for instant booking",
-          "Create special offers section",
-        ],
+        metrics: ["Profile completeness: 95%", "Weekly posts: 3-4 times", "Response rate: 98%", "Photos updated: Monthly"],
+        actionItems: ["Add virtual tour feature", "Enable messaging for instant booking", "Create special offers section"],
       },
     },
     {
@@ -272,205 +262,104 @@ const Results = () => {
     },
   ];
 
-  const mapContainerStyle = {
-    width: "100%",
-    height: "400px",
-  };
-
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 py-8 space-y-12">
-        {/* Header Section */}
-        <div className="text-center space-y-6">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <img src="/logo-icon.svg" alt="HotelGrader" className="h-8 w-8" />
-            <span className="text-xl font-bold text-foreground">HotelGrader</span>
-          </div>
-          <div>
-            <h1 className="text-4xl font-bold text-foreground mb-2">{formData.hotelName}</h1>
-            <p className="text-lg text-muted-foreground">
-              {formData.city}, {formData.state}
-            </p>
-          </div>
-
-          <div className="flex flex-col items-center gap-6">
-            <GradeBadge grade={grade} score={score} />
-            <div className="text-center space-y-1">
-              <p className="text-xl font-semibold text-foreground">
-                You rank #{ranking} out of {totalHotels} hotels within 2 miles
-              </p>
-              <p className="text-lg text-muted-foreground">Top {percentile}% in your market</p>
+      <div className="flex flex-col lg:flex-row min-h-screen">
+        {/* LEFT PANEL */}
+        <div className="lg:w-[40%] bg-muted/30 p-6 lg:p-8 overflow-y-auto">
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-6">
+              <img src="/logo-icon.svg" alt="HotelGrader" className="h-8 w-8" />
+              <span className="text-xl font-bold text-foreground">HotelGrader</span>
+            </div>
+            
+            <div className="flex items-start gap-6 mb-6">
+              <GradeBadge grade={grade} score={score} size="md" />
+              <div className="flex-1">
+                <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
+                  {formData.hotelName}
+                </h1>
+                <p className="text-muted-foreground mb-3">
+                  {formData.city}, {formData.state}
+                </p>
+                <div className="space-y-1">
+                  <p className="text-lg font-semibold text-foreground">Rank #{ranking} of {totalHotels}</p>
+                  <p className="text-sm text-muted-foreground">Top {percentile}% in your market</p>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <Separator />
+          <Separator className="my-6" />
 
-        {/* Quick Insights */}
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-foreground">Quick Insights</h2>
-          <div className="grid md:grid-cols-3 gap-4">
-            <QuickInsight
-              title="✓ Your Strengths"
-              variant="success"
-              items={["Google Business Profile: Leading market", "Direct Booking: Strong performance"]}
-            />
-            <QuickInsight
-              title="⚠️ Opportunity Gaps"
-              variant="warning"
-              items={["Social Media: Below average engagement", "Website Speed: Needs optimization"]}
-            />
-            <QuickInsight
-              title="📊 Market Position"
-              variant="info"
-              items={[`Rank #${ranking} of ${totalHotels}`, "5 points behind #1 competitor"]}
-            />
+          <div className="space-y-4 mb-8">
+            <h2 className="text-xl font-semibold text-foreground">Quick Insights</h2>
+            <div className="space-y-3">
+              <QuickInsight title="✓ Your Strengths" variant="success" items={["Google Business Profile: Leading market", "Direct Booking: Strong performance"]} />
+              <QuickInsight title="⚠️ Opportunity Gaps" variant="warning" items={["Social Media: Below average", "Website Speed: Needs optimization"]} />
+              <QuickInsight title="📊 Market Position" variant="info" items={[`${totalHotels} hotels analyzed`, "5 points behind #1"]} />
+            </div>
+          </div>
+
+          <Separator className="my-6" />
+
+          <div className="space-y-3">
+            <Button onClick={() => navigate("/")} variant="outline" className="w-full">
+              <RotateCcw className="mr-2 h-4 w-4" />
+              Analyze Another Hotel
+            </Button>
+            <Button variant="default" className="w-full">
+              <Download className="mr-2 h-4 w-4" />
+              Download Full Report
+            </Button>
           </div>
         </div>
 
-        <Separator />
-
-        {/* Competitor Map */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-foreground">Your Competitive Landscape</h2>
-            <Button variant="outline">View Detailed Comparison</Button>
+        {/* RIGHT PANEL - Map */}
+        <div className="lg:w-[60%] bg-background p-6 lg:p-8 overflow-y-auto">
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-foreground mb-2">Competitive Landscape</h2>
+            <p className="text-sm text-muted-foreground">Your hotel and nearby competitors within 2 miles</p>
           </div>
+
           <Card className="p-4">
             <div className="rounded-lg overflow-hidden border border-border">
-              <LoadScript
-                googleMapsApiKey="AIzaSyB7TPyciCLKNs8Ukp_8q9xEdzYycJa7D3M"
-                onLoad={() => setIsScriptLoaded(true)}
-              >
+              <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ""} onLoad={() => setIsScriptLoaded(true)}>
                 {isScriptLoaded && (
-                  <GoogleMap
-                    mapContainerStyle={mapContainerStyle}
-                    center={hotelCenter}
-                    zoom={14}
-                    options={{
-                      disableDefaultUI: false,
-                      zoomControl: true,
-                      styles: [
-                        {
-                          featureType: "poi",
-                          elementType: "labels",
-                          stylers: [{ visibility: "off" }],
-                        },
-                      ],
-                    }}
-                  >
-                    {/* Target Hotel - LARGE BLUE Marker */}
+                  <GoogleMap mapContainerStyle={{ width: "100%", height: "600px" }} center={hotelCenter} zoom={14}>
                     {targetHotel && (
                       <Marker
                         position={{ lat: targetHotel.lat, lng: targetHotel.lng }}
-                        icon={{
-                          path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
-                          fillColor: "#0EA5E9",
-                          fillOpacity: 1,
-                          strokeWeight: 3,
-                          strokeColor: "#ffffff",
-                          scale: 2.5,
-                        }}
-                        title={`${targetHotel.name} (Your Hotel)`}
+                        icon={{ path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z", fillColor: "#0EA5E9", fillOpacity: 1, strokeWeight: 3, strokeColor: "#ffffff", scale: 2.5 }}
+                        title={targetHotel.name}
                       />
                     )}
-                    
-                    {/* Competitors - SMALL RED Markers */}
                     {competitors.map((competitor: any, index: number) => (
                       <Marker
                         key={index}
                         position={{ lat: competitor.lat, lng: competitor.lng }}
-                        icon={{
-                          path: google.maps.SymbolPath.CIRCLE,
-                          fillColor: "#EF4444",
-                          fillOpacity: 0.9,
-                          strokeWeight: 2,
-                          strokeColor: "#ffffff",
-                          scale: 6,
-                        }}
-                        title={`${competitor.name} - ${competitor.rating.toFixed(1)} ★`}
+                        icon={{ path: window.google.maps.SymbolPath.CIRCLE, fillColor: "#EF4444", fillOpacity: 1, strokeWeight: 2, strokeColor: "#ffffff", scale: 8 }}
+                        title={`${competitor.name} - ${competitor.rating}★`}
                       />
                     ))}
                   </GoogleMap>
                 )}
               </LoadScript>
+              
+              <div className="mt-4 p-4 bg-muted/30 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-[#0EA5E9] border-2 border-white"></div>
+                    <span className="text-sm font-medium">Your Hotel</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-[#EF4444] border border-white"></div>
+                    <span className="text-sm text-muted-foreground">Competitors ({competitors.length})</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </Card>
-        </div>
-
-        <Separator />
-
-        {/* Category Breakdown */}
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-foreground">Detailed Category Analysis</h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            {categories.map((category, index) => (
-              <CategoryCard key={index} {...category} />
-            ))}
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Upgrade Section */}
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-foreground text-center">
-            Want to Outperform Your Competition?
-          </h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            <UpgradeCard
-              title="Full Detailed Report"
-              price="FREE"
-              variant="free"
-              features={[
-                "Email + PDF version",
-                "All 10 categories detailed",
-                "Competitor comparison data",
-                "Custom recommendations",
-              ]}
-              buttonText="Email Me Full Report"
-            />
-            <UpgradeCard
-              title="Strategy Consultation"
-              price="FREE"
-              variant="consultation"
-              features={[
-                "30-minute expert call",
-                "Custom action plan",
-                "Priority booking",
-                "Implementation guidance",
-              ]}
-              buttonText="Book Free Call"
-            />
-            <UpgradeCard
-              title="Premium Services"
-              price="Starting at $199/mo"
-              variant="premium"
-              features={[
-                "Done-for-you optimization",
-                "Monthly monitoring & reports",
-                "Guaranteed improvement",
-                "Dedicated account manager",
-              ]}
-              buttonText="Learn More"
-            />
-          </div>
-        </div>
-
-        {/* Footer Actions */}
-        <div className="flex flex-wrap items-center justify-center gap-4 pt-8">
-          <Button variant="outline" onClick={() => navigate("/")}>
-            <RotateCcw className="h-4 w-4 mr-2" />
-            Analyze Another Hotel
-          </Button>
-          <Button variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Download PDF Report
-          </Button>
-          <Button variant="outline">
-            <Share2 className="h-4 w-4 mr-2" />
-            Share Your Grade
-          </Button>
         </div>
       </div>
     </div>
