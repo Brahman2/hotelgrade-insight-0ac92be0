@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScoreGauge } from "@/components/audit/ScoreGauge";
 import MetricCard from "@/components/audit/MetricCard";
+import { UnlockBanner } from "@/components/UnlockBanner";
 import { EmailCaptureModal } from "@/components/audit/EmailCaptureModal";
 import { CompetitorMap } from "@/components/CompetitorMap";
 import { ProgressSection } from "@/components/ProgressSection";
@@ -294,20 +295,29 @@ const Analyze = () => {
 
                   {/* Section Content */}
                   <div className="p-6">
-                    {/* Preview (first 2-3 metrics) */}
-                    <div className="grid md:grid-cols-2 gap-4 mb-6">
-                      {section.data.metrics.slice(0, showPreview ? 3 : undefined).map((metric, idx) => (
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {section.data.metrics.map((metric, idx) => (
                         <MetricCard
                           key={idx}
-                          title={metric.label}
-                          score={metric.score || 0}
-                          status={metric.color === 'green' ? 'good' : metric.color === 'amber' ? 'warning' : 'critical'}
-                          insight={metric.insight || ''}
-                          recommendation={metric.recommendation || ''}
-                          isLocked={showPreview && idx >= 2}
-                          onUnlock={() => setShowEmailModal(true)}
+                          title={metric.title}
+                          score={metric.score}
+                          insight={metric.insight}
+                          isLocked={!isUnlocked && idx >= 2}
                         />
                       ))}
+                    </div>
+                  
+                    {!isUnlocked && (
+                      <UnlockBanner
+                        sectionTitle={section.title}
+                        lockedCount={section.data.metrics.length - 2}
+                        onUnlock={() => setShowEmailModal(true)}
+                      />
+                    )}
+                  
+                    {isUnlocked && (
+                      {/* Keep existing Key Findings & Recommendations code */}
+                    )}
                     </div>
 
                     {/* Locked Overlay / Unlock Button */}
