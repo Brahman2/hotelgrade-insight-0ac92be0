@@ -267,30 +267,27 @@ const Results = () => {
       <div className="flex flex-col lg:flex-row min-h-screen">
         {/* LEFT PANEL */}
         <div className="lg:w-[40%] bg-muted/30 p-6 lg:p-8 overflow-y-auto">
-          {/* Top Banner - Hotel Info & Grade */}
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-6">
               <img src="/logo-icon.svg" alt="HotelGrader" className="h-8 w-8" />
               <span className="text-xl font-bold text-foreground">HotelGrader</span>
             </div>
             
-            <Card className="p-6 bg-background/50 border-2">
-              <div className="flex items-start gap-6">
-                <GradeBadge grade={grade} score={score} size="md" />
-                <div className="flex-1">
-                  <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
-                    {formData.hotelName}
-                  </h1>
-                  <p className="text-muted-foreground mb-3">
-                    {formData.city}, {formData.state}
-                  </p>
-                  <div className="space-y-1">
-                    <p className="text-lg font-semibold text-foreground">Rank #{ranking} of {totalHotels}</p>
-                    <p className="text-sm text-muted-foreground">Top {percentile}% in your market</p>
-                  </div>
+            <div className="flex items-start gap-6 mb-6">
+              <GradeBadge grade={grade} score={score} size="md" />
+              <div className="flex-1">
+                <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
+                  {formData.hotelName}
+                </h1>
+                <p className="text-muted-foreground mb-3">
+                  {formData.city}, {formData.state}
+                </p>
+                <div className="space-y-1">
+                  <p className="text-lg font-semibold text-foreground">Rank #{ranking} of {totalHotels}</p>
+                  <p className="text-sm text-muted-foreground">Top {percentile}% in your market</p>
                 </div>
               </div>
-            </Card>
+            </div>
           </div>
 
           <Separator className="my-6" />
