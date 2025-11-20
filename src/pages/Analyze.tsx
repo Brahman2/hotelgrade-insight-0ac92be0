@@ -48,15 +48,11 @@ const Analyze = () => {
     state: formData.state,
   };
 
-  // Simulate analysis completion
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setAnalysisComplete(true);
-      setCompetitorCount(15);
-    }, 8000); // 8 seconds to match 6-step progress
-
-    return () => clearTimeout(timer);
-  }, []);
+  // Handle analysis completion callback from ProgressSection
+  const handleAnalysisComplete = () => {
+    setAnalysisComplete(true);
+    setCompetitorCount(15);
+  };
 
   const handleEmailSubmit = async (email: string) => {
     setUserEmail(email);
@@ -151,7 +147,12 @@ const Analyze = () => {
       <div className="container mx-auto max-w-7xl px-4 py-8">
         {/* Progress Section - shows until analysis complete */}
         <div className="mb-8">
-          <ProgressSection isComplete={analysisComplete} competitorCount={competitorCount} />
+          <ProgressSection
+            isComplete={analysisComplete}
+            competitorCount={competitorCount}
+            hotelName={auditData.hotelName}
+            onAnalysisComplete={handleAnalysisComplete}
+          />
         </div>
 
         {/* Competitor Map - always visible, loads after progress */}
