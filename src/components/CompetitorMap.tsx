@@ -100,6 +100,8 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
       if (data.success) {
         setTarget(data.target);
         setCompetitors(data.competitors);
+        console.log("🎯 Target data:", data.target);
+        console.log("🎯 Has rating?", data.target?.rating);
 
         // Calculate rank if target has rating
         if (data.target?.rating) {
