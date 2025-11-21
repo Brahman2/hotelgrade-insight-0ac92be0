@@ -109,7 +109,17 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
             data.target.rating,
             data.competitors.map((c: Competitor) => c.rating),
           );
+          console.log("🎯 Calculated rank:", rank);
+          console.log("🎯 Competitors count:", data.competitors.length);
           setTargetRank(rank);
+          console.log("🎯 setTargetRank called with:", rank);
+          
+          // Force a re-render check
+          setTimeout(() => {
+            console.log("🎯 targetRank state after 100ms should be:", rank);
+          }, 100);
+        } else {
+          console.log("❌ No rating in target data");
         }
       } else {
         throw new Error(data.message || "Failed to load competitor data");
@@ -187,6 +197,8 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
       </Card>
     );
   }
+
+  console.log("🎯 About to render - targetRank:", targetRank, "target rating:", target?.rating);
 
   return (
     <div className="space-y-4">
