@@ -107,7 +107,6 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
             data.target.rating,
             data.competitors.map((c: Competitor) => c.rating),
           );
-          console.log("🎯 Setting targetRank:", rank);
           setTargetRank(rank);
         }
       } else {
