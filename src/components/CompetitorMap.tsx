@@ -56,10 +56,10 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
   const BACKEND_URL = "https://web-production-13e22.up.railway.app";
 
   // Get rating tier for a competitor
-  const getRatingTier = (rating: number): 'high' | 'medium' | 'low' => {
-    if (rating >= RATING_TIERS.high.min) return 'high';
-    if (rating >= RATING_TIERS.medium.min) return 'medium';
-    return 'low';
+  const getRatingTier = (rating: number): "high" | "medium" | "low" => {
+    if (rating >= RATING_TIERS.high.min) return "high";
+    if (rating >= RATING_TIERS.medium.min) return "medium";
+    return "low";
   };
 
   // Calculate target hotel rank
@@ -105,8 +105,9 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
         if (data.target?.rating) {
           const rank = calculateRank(
             data.target.rating,
-            data.competitors.map((c: Competitor) => c.rating)
+            data.competitors.map((c: Competitor) => c.rating),
           );
+          console.log("🎯 Setting targetRank:", rank);
           setTargetRank(rank);
         }
       } else {
@@ -120,11 +121,11 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
     }
   };
 
-  const toggleFilter = (tier: 'high' | 'medium' | 'low') => {
-    setFilters(prev => ({ ...prev, [tier]: !prev[tier] }));
+  const toggleFilter = (tier: "high" | "medium" | "low") => {
+    setFilters((prev) => ({ ...prev, [tier]: !prev[tier] }));
   };
 
-  const filteredCompetitors = competitors.filter(c => {
+  const filteredCompetitors = competitors.filter((c) => {
     const tier = getRatingTier(c.rating);
     return filters[tier];
   });
@@ -201,10 +202,13 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
                   You rank #{targetRank} out of {competitors.length + 1} hotels
                 </h3>
                 <p className="text-muted-foreground mt-1">
-                  {targetRank === 1 ? "🎉 You're the top-rated hotel in your area!" :
-                   targetRank <= 3 ? "Great job! You're in the top 3!" :
-                   targetRank <= Math.ceil((competitors.length + 1) / 2) ? "You're in the top half of competitors." :
-                   "Room for improvement compared to nearby hotels."}
+                  {targetRank === 1
+                    ? "🎉 You're the top-rated hotel in your area!"
+                    : targetRank <= 3
+                      ? "Great job! You're in the top 3!"
+                      : targetRank <= Math.ceil((competitors.length + 1) / 2)
+                        ? "You're in the top half of competitors."
+                        : "Room for improvement compared to nearby hotels."}
                 </p>
               </div>
             </div>
@@ -232,7 +236,7 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
             {(Object.keys(RATING_TIERS) as Array<keyof typeof RATING_TIERS>).map((tier) => {
               const config = RATING_TIERS[tier];
               const Icon = config.icon;
-              const count = competitors.filter(c => getRatingTier(c.rating) === tier).length;
+              const count = competitors.filter((c) => getRatingTier(c.rating) === tier).length;
 
               return (
                 <Button
@@ -348,14 +352,11 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
             </div>
             {(Object.keys(RATING_TIERS) as Array<keyof typeof RATING_TIERS>).map((tier) => {
               const config = RATING_TIERS[tier];
-              const count = competitors.filter(c => getRatingTier(c.rating) === tier).length;
+              const count = competitors.filter((c) => getRatingTier(c.rating) === tier).length;
 
               return (
                 <div key={tier} className="flex items-center gap-2">
-                  <div
-                    className="w-4 h-4 rounded-full"
-                    style={{ backgroundColor: config.color }}
-                  ></div>
+                  <div className="w-4 h-4 rounded-full" style={{ backgroundColor: config.color }}></div>
                   <span className="text-sm text-gray-600">
                     {config.label} ({count})
                   </span>
@@ -411,10 +412,7 @@ export const CompetitorMap = ({ hotelName, city, state }: CompetitorMapProps) =>
                 onClick={() => setSelectedCompetitor(competitor)}
               >
                 <div className="flex items-center gap-3 flex-1">
-                  <div
-                    className="w-3 h-3 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: config.color }}
-                  ></div>
+                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: config.color }}></div>
                   <div className="flex-1">
                     <p className="font-medium text-sm">{competitor.name}</p>
                     <div className="flex items-center gap-2 mt-1">
