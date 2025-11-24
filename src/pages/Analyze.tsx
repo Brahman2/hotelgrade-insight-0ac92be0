@@ -10,7 +10,9 @@ import { EmailCaptureModal } from "@/components/audit/EmailCaptureModal";
 import { CompetitorMap } from "@/components/CompetitorMap";
 import { ProgressSection } from "@/components/ProgressSection";
 import { MOCK_AUDIT_REPORT } from "@/lib/mockData";
-import type { AuditReport } from "@/types/audit";
+import { analyzeHotelMetrics, transformApiResponse, SECTION_INFO } from "@/lib/api";
+import type { AuditReport, AuditSection } from "@/types/audit";
+import { getGradeFromScore } from "@/types/audit";
 import {
   Lock,
   Unlock,
@@ -26,6 +28,7 @@ import {
   CheckCircle,
   AlertCircle,
   ChevronLeft,
+  Loader2,
 } from "lucide-react";
 
 const Analyze = () => {
@@ -39,79 +42,134 @@ const Analyze = () => {
   const [userEmail, setUserEmail] = useState("");
   const [analysisComplete, setAnalysisComplete] = useState(false);
   const [competitorCount, setCompetitorCount] = useState(0);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [auditData, setAuditData] = useState<AuditReport | null>(null);
+  const [useRealApi, setUseRealApi] = useState(true); // Toggle for API vs mock
 
-  // Use mock data (in production, this would come from API)
-  const auditData: AuditReport = {
-    ...MOCK_AUDIT_REPORT,
-    hotelName: formData.hotelName,
-    city: formData.city,
-    state: formData.state,
-  };
-
-  // Handle analysis completion callback from ProgressSection
-  const handleAnalysisComplete = () => {
-    setAnalysisComplete(true);
+  // Start analysis when progress section completes
+  const handleAnalysisComplete = async () => {
     setCompetitorCount(15);
+
+    if (useRealApi) {
+      // Call the real API
+      setIsAnalyzing(true);
+      setAnalysisError(null);
+
+      try {
+        console.log("🚀 Starting 40-metric analysis...");
+        const response = await analyzeHotelMetrics(
+          formData.hotelName,
+          formData.city,
+          formData.state
+        );
+
+        if (response.success && response.data) {
+          const transformedData = transformApiResponse(response);
+          setAuditData(transformedData);
+          console.log("✅ Analysis complete:", transformedData);
+        } else {
+          throw new Error(response.error || "Analysis failed");
+        }
+      } catch (error) {
+        console.error("❌ Analysis error:", error);
+        setAnalysisError(error instanceof Error ? error.message : "Analysis failed");
+        // Fall back to mock data on error
+        setAuditData({
+          ...MOCK_AUDIT_REPORT,
+          hotelName: formData.hotelName,
+          city: formData.city,
+          state: formData.state,
+        });
+      } finally {
+        setIsAnalyzing(false);
+        setAnalysisComplete(true);
+      }
+    } else {
+      // Use mock data
+      setAuditData({
+        ...MOCK_AUDIT_REPORT,
+        hotelName: formData.hotelName,
+        city: formData.city,
+        state: formData.state,
+      });
+      setAnalysisComplete(true);
+    }
   };
 
   const handleEmailSubmit = async (email: string) => {
     setUserEmail(email);
     setIsAllUnlocked(true);
-    setUnlockedSections(["google_business", "reviews", "website", "ota", "social", "competitive"]);
+    setUnlockedSections(["digitalPresence", "reputation", "socialMedia", "advertising", "booking", "competitive"]);
     setShowEmailModal(false);
   };
 
   const sectionIcons = {
-    google_business: Globe,
-    reviews: Star,
-    website: Globe,
-    ota: Hotel,
-    social: Share2,
+    digitalPresence: Globe,
+    reputation: Star,
+    socialMedia: Share2,
+    advertising: Target,
+    booking: Hotel,
     competitive: Target,
   };
 
-  const sections = [
-    {
-      id: "google_business",
-      title: "Digital Presence",
-      description: "Your Google presence and local search visibility",
-      data: auditData.digitalPresence,
-    },
-    {
-      id: "reviews",
-      title: "Reputation",
-      description: "Review performance across all major platforms",
-      data: auditData.reputation,
-    },
-    {
-      id: "website",
-      title: "Social Media",
-      description: "Social media presence and engagement metrics",
-      data: auditData.socialMedia,
-    },
-    {
-      id: "ota",
-      title: "Advertising",
-      description: "Advertising and paid marketing presence",
-      data: auditData.advertising,
-    },
-    {
-      id: "social",
-      title: "Booking",
-      description: "Online booking channels and optimization",
-      data: auditData.booking,
-    },
-    {
-      id: "competitive",
-      title: "Competitive Analysis",
-      description: "Market position and competitor insights",
-      data: auditData.competitive,
-    },
-  ];
+  // Build sections from audit data
+  const getSections = () => {
+    if (!auditData) return [];
+
+    // Get data from categories (new structure) or flat structure (legacy)
+    const getData = (key: string): AuditSection | undefined => {
+      if (auditData.categories && auditData.categories[key as keyof typeof auditData.categories]) {
+        return auditData.categories[key as keyof typeof auditData.categories];
+      }
+      return auditData[key as keyof AuditReport] as AuditSection | undefined;
+    };
+
+    return [
+      {
+        id: "digitalPresence",
+        title: SECTION_INFO.digitalPresence.title,
+        description: SECTION_INFO.digitalPresence.description,
+        data: getData("digitalPresence") || { score: 0, metrics: [] },
+      },
+      {
+        id: "reputation",
+        title: SECTION_INFO.reputation.title,
+        description: SECTION_INFO.reputation.description,
+        data: getData("reputation") || { score: 0, metrics: [] },
+      },
+      {
+        id: "socialMedia",
+        title: SECTION_INFO.socialMedia.title,
+        description: SECTION_INFO.socialMedia.description,
+        data: getData("socialMedia") || { score: 0, metrics: [] },
+      },
+      {
+        id: "advertising",
+        title: SECTION_INFO.advertising.title,
+        description: SECTION_INFO.advertising.description,
+        data: getData("advertising") || { score: 0, metrics: [] },
+      },
+      {
+        id: "booking",
+        title: SECTION_INFO.booking.title,
+        description: SECTION_INFO.booking.description,
+        data: getData("booking") || { score: 0, metrics: [] },
+      },
+      {
+        id: "competitive",
+        title: SECTION_INFO.competitive.title,
+        description: SECTION_INFO.competitive.description,
+        data: getData("competitive") || { score: 0, metrics: [] },
+      },
+    ];
+  };
+
+  const sections = getSections();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      {/* Header - matches Index.tsx */}
+      {/* Header */}
       <header className="bg-background/95 backdrop-blur-sm shadow-md">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -130,14 +188,14 @@ const Analyze = () => {
         </div>
       </header>
 
-      {/* Hero Section - matches Index.tsx style */}
+      {/* Hero Section */}
       <section className="pt-12 pb-8 px-4 bg-gradient-to-r from-primary/10 to-secondary/10">
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-4">
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">Performance Audit Results</h1>
-            <p className="text-xl text-muted-foreground">{auditData.hotelName}</p>
+            <p className="text-xl text-muted-foreground">{formData.hotelName}</p>
             <p className="text-muted-foreground">
-              {auditData.city}, {auditData.state}
+              {formData.city}, {formData.state}
             </p>
           </div>
         </div>
@@ -145,17 +203,46 @@ const Analyze = () => {
 
       {/* Main Content */}
       <div className="container mx-auto max-w-7xl px-4 py-8">
-        {/* Progress Section - shows until analysis complete */}
+        {/* Progress Section */}
         <div className="mb-8">
           <ProgressSection
             isComplete={analysisComplete}
             competitorCount={competitorCount}
-            hotelName={auditData.hotelName}
+            hotelName={formData.hotelName}
             onAnalysisComplete={handleAnalysisComplete}
           />
         </div>
 
-        {/* Competitor Map - always visible, loads after progress */}
+        {/* Loading State - while API is being called */}
+        {isAnalyzing && (
+          <Card className="mb-8 p-8">
+            <div className="flex flex-col items-center justify-center py-8">
+              <Loader2 className="h-16 w-16 text-primary animate-spin mb-4" />
+              <h3 className="text-xl font-semibold mb-2">Analyzing 40 Public Signals...</h3>
+              <p className="text-muted-foreground text-center max-w-md">
+                Our AI is researching {formData.hotelName}'s digital presence across Google, social media, OTAs, and more.
+                This typically takes 30-60 seconds.
+              </p>
+            </div>
+          </Card>
+        )}
+
+        {/* Error State */}
+        {analysisError && (
+          <Card className="mb-8 p-6 border-amber-200 bg-amber-50">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="font-semibold text-amber-800">Analysis Notice</h3>
+                <p className="text-amber-700 text-sm mt-1">
+                  {analysisError}. Showing sample data for demonstration.
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Competitor Map */}
         <div className="mb-8">
           <Card className="overflow-hidden border border-border shadow-lg">
             <div className="bg-muted/30 p-6 border-b border-border">
@@ -171,7 +258,7 @@ const Analyze = () => {
             </div>
             <div className="p-6">
               {analysisComplete ? (
-                <CompetitorMap hotelName={auditData.hotelName} city={auditData.city} state={auditData.state} />
+                <CompetitorMap hotelName={formData.hotelName} city={formData.city} state={formData.state} />
               ) : (
                 <div className="flex items-center justify-center py-20">
                   <div className="text-center">
@@ -184,24 +271,37 @@ const Analyze = () => {
           </Card>
         </div>
 
-        {/* Overall Score - shows after analysis complete */}
-        {analysisComplete && (
+        {/* Overall Score */}
+        {analysisComplete && auditData && (
           <div className="mb-8 animate-fade-in">
             <Card className="bg-gradient-to-r from-primary to-secondary text-primary-foreground p-8 shadow-xl border-0">
               <div className="text-center">
                 <p className="text-primary-foreground/80 text-sm font-medium mb-4">OVERALL PERFORMANCE SCORE</p>
                 <div className="flex justify-center mb-4">
-                  <ScoreGauge grade={auditData.executiveSummary.overallGrade} score={auditData.executiveSummary.overallScore} size="lg" />
+                  <ScoreGauge
+                    grade={auditData.overallGrade || auditData.executiveSummary?.overallGrade || "C"}
+                    score={auditData.overallScore || auditData.executiveSummary?.overallScore || 0}
+                    size="lg"
+                  />
                 </div>
-                <div className="text-6xl font-bold mb-2">{auditData.executiveSummary.overallGrade}</div>
-                <p className="text-primary-foreground/80">{auditData.executiveSummary.overallScore}/100 points</p>
+                <div className="text-6xl font-bold mb-2">
+                  {auditData.overallGrade || auditData.executiveSummary?.overallGrade || "C"}
+                </div>
+                <p className="text-primary-foreground/80">
+                  {auditData.overallScore || auditData.executiveSummary?.overallScore || 0}/100 points
+                </p>
+                {auditData._meta && (
+                  <p className="text-primary-foreground/60 text-sm mt-2">
+                    {auditData._meta.totalMetrics} metrics analyzed
+                  </p>
+                )}
               </div>
             </Card>
           </div>
         )}
 
-        {/* Executive Summary - shows after analysis complete */}
-        {analysisComplete && (
+        {/* Executive Summary */}
+        {analysisComplete && auditData?.executiveSummary && (
           <div className="mb-8 animate-fade-in">
             <ExecutiveSummary
               overallScore={auditData.executiveSummary.overallScore}
@@ -216,7 +316,7 @@ const Analyze = () => {
           </div>
         )}
 
-        {/* Unlock All CTA - shows after analysis complete */}
+        {/* Unlock All CTA */}
         {analysisComplete && !isAllUnlocked && (
           <Card className="mb-8 bg-gradient-to-r from-primary/90 to-secondary/90 text-primary-foreground p-6 shadow-lg border-0 animate-fade-in">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -226,7 +326,7 @@ const Analyze = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-bold mb-1">Unlock Your Complete Analysis</h3>
-                  <p className="text-primary-foreground/80">Get instant access to all {sections.length} sections with detailed insights</p>
+                  <p className="text-primary-foreground/80">Get instant access to all 6 sections with 40 detailed metrics</p>
                 </div>
               </div>
               <Button
@@ -242,12 +342,13 @@ const Analyze = () => {
           </Card>
         )}
 
-        {/* Section Cards - show after analysis complete */}
-        {analysisComplete && (
+        {/* Section Cards */}
+        {analysisComplete && auditData && (
           <div className="space-y-8 animate-fade-in">
             {sections.map((section) => {
-              const Icon = sectionIcons[section.id as keyof typeof sectionIcons];
+              const Icon = sectionIcons[section.id as keyof typeof sectionIcons] || Globe;
               const isUnlocked = isAllUnlocked || unlockedSections.includes(section.id);
+              const sectionScore = section.data?.score || 0;
 
               return (
                 <Card key={section.id} className="overflow-hidden border border-border shadow-lg">
@@ -265,16 +366,8 @@ const Analyze = () => {
                       </div>
                       <div className="flex items-center gap-3">
                         <ScoreGauge
-                          grade={
-                            section.data.score >= 90
-                              ? "A"
-                              : section.data.score >= 80
-                                ? "B"
-                                : section.data.score >= 70
-                                  ? "C"
-                                  : "D"
-                          }
-                          score={section.data.score || 0}
+                          grade={getGradeFromScore(sectionScore)}
+                          score={sectionScore}
                           size="sm"
                         />
                         {isUnlocked ? (
@@ -292,14 +385,14 @@ const Analyze = () => {
                     </div>
                   </div>
 
-                  {/* Section Content - VERSION C */}
+                  {/* Section Content */}
                   <div className="p-6">
                     {/* Metric Grid */}
                     <div className="grid md:grid-cols-2 gap-4">
-                      {section.data.metrics.map((metric, idx) => (
+                      {(section.data?.metrics || []).map((metric, idx) => (
                         <MetricCard
-                          key={idx}
-                          title={metric.title || metric.label}
+                          key={metric.id || idx}
+                          title={metric.name || metric.title || metric.label || "Metric"}
                           score={metric.score}
                           insight={metric.insight}
                           isLocked={!isUnlocked && idx >= 2}
@@ -311,8 +404,8 @@ const Analyze = () => {
                       ))}
                     </div>
 
-                    {/* Unlock Banner - shows when section is locked */}
-                    {!isUnlocked && (
+                    {/* Unlock Banner */}
+                    {!isUnlocked && section.data?.metrics && section.data.metrics.length > 2 && (
                       <UnlockBanner
                         sectionTitle={section.title}
                         lockedCount={section.data.metrics.length - 2}
@@ -321,7 +414,7 @@ const Analyze = () => {
                     )}
 
                     {/* Full Content (when unlocked) */}
-                    {isUnlocked && (
+                    {isUnlocked && section.data?.metrics && (
                       <div className="space-y-6 mt-6">
                         {/* Key Findings */}
                         <div className="bg-primary/5 rounded-lg p-6 border border-primary/10">
@@ -367,13 +460,13 @@ const Analyze = () => {
           </div>
         )}
 
-        {/* Final CTA - shows after all sections */}
+        {/* Final CTA */}
         {analysisComplete && !isAllUnlocked && (
           <Card className="mt-12 bg-gradient-to-r from-primary to-secondary text-primary-foreground p-8 shadow-xl border-0 animate-fade-in">
             <div className="text-center max-w-2xl mx-auto">
               <h2 className="text-3xl font-bold mb-4">Ready for Your Complete Analysis?</h2>
               <p className="text-xl text-primary-foreground/80 mb-6">
-                Unlock all {sections.length} sections and get your full 40-point performance audit
+                Unlock all 6 sections and get your full 40-metric performance audit
               </p>
               <Button
                 size="lg"
@@ -395,7 +488,7 @@ const Analyze = () => {
         onClose={() => setShowEmailModal(false)}
         onSubmit={handleEmailSubmit}
         section="all"
-        hotelName={auditData.hotelName}
+        hotelName={formData.hotelName}
       />
     </div>
   );

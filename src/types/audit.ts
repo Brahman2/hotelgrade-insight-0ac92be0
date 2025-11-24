@@ -1,16 +1,19 @@
 // src/types/audit.ts
 // TypeScript type definitions for Hotel Grader 40-Point Audit System
-// Created: November 16, 2025
+// Updated: November 24, 2025 - Aligned with backend API structure
 
 export type Grade = 'A+' | 'A' | 'A-' | 'B+' | 'B' | 'B-' | 'C+' | 'C' | 'C-' | 'D' | 'F';
 
 export type ScoreColor = 'green' | 'amber' | 'red';
 
+// Individual metric from the 40-metric analysis
 export interface MetricDetail {
+  id: string;           // Unique metric ID (e.g., "dp_1", "rep_2")
+  name: string;         // Display name
   score: number | null; // 0-100, null if locked
-  color: ScoreColor;
-  label: string;
-  title?: string;
+  color?: ScoreColor;
+  label?: string;       // Legacy - use name instead
+  title?: string;       // Legacy - use name instead
   value?: string | number;
   isLocked?: boolean;
   insight?: string;
@@ -24,17 +27,23 @@ export interface CompetitorData {
   rank: number;
   name: string;
   rating: number;
-  reviewCount: number;
-  distance: number; // miles
+  reviewCount?: number;
+  reviews?: number;
+  distance?: number; // miles
+  distance_miles?: number;
   lat: number;
   lng: number;
   placeId?: string;
+  place_id?: string;
   priceLevel?: number;
+  price_level?: number;
+  address?: string;
 }
 
+// Generic section with metrics array
 export interface AuditSection {
   score: number | null;
-  color: ScoreColor;
+  color?: ScoreColor;
   metrics: MetricDetail[];
   isLocked?: boolean;
   unlockMessage?: string;
@@ -43,69 +52,12 @@ export interface AuditSection {
 export interface ExecutiveSummary {
   overallScore: number;
   overallGrade: Grade;
-  competitiveRank: number;
-  competitiveTotal: number;
+  competitiveRank?: number;
+  competitiveTotal?: number;
   strengths: string[];
   criticalIssues: string[];
   quickWins?: string[];
   keyFinding: string;
-}
-
-export interface DigitalPresenceSection extends AuditSection {
-  googleBusinessProfile: MetricDetail;
-  websitePerformance: MetricDetail;
-  searchVisibility: MetricDetail;
-  brandProtection: MetricDetail;
-  mobileFriendly: MetricDetail;
-  localSEO: MetricDetail;
-  directoryListings: MetricDetail;
-}
-
-export interface ReputationSection extends AuditSection {
-  overallRating: MetricDetail;
-  reviewVolume: MetricDetail;
-  reviewRecency: MetricDetail;
-  responseRate: MetricDetail;
-  sentimentScore: MetricDetail;
-  reviewDistribution: MetricDetail;
-  competitivePosition: MetricDetail;
-}
-
-export interface SocialMediaSection extends AuditSection {
-  facebookPresence: MetricDetail;
-  instagramPresence: MetricDetail;
-  engagement: MetricDetail;
-  contentQuality: MetricDetail;
-  postFrequency: MetricDetail;
-  followerGrowth: MetricDetail;
-}
-
-export interface AdvertisingSection extends AuditSection {
-  googleAdsPresence: MetricDetail;
-  metaAdsPresence: MetricDetail;
-  metasearchVisibility: MetricDetail;
-  brandProtection: MetricDetail;
-  adSpendEfficiency: MetricDetail;
-  competitorAdGaps: MetricDetail;
-}
-
-export interface BookingSection extends AuditSection {
-  otaPresence: MetricDetail;
-  bookingDotCom: MetricDetail;
-  expedia: MetricDetail;
-  directBookingFlow: MetricDetail;
-  mobileBooking: MetricDetail;
-  paymentOptions: MetricDetail;
-  cancellationPolicy: MetricDetail;
-}
-
-export interface CompetitiveSection extends AuditSection {
-  marketPosition: MetricDetail;
-  priceCompetitiveness: MetricDetail;
-  amenityComparison: MetricDetail;
-  ratingVsCompetitors: MetricDetail;
-  uniqueAdvantages: MetricDetail;
-  competitiveThreats: MetricDetail;
 }
 
 export interface ActionPlanItem {
@@ -118,46 +70,78 @@ export interface ActionPlanItem {
   resources?: string[];
 }
 
+// Main audit report structure - aligned with backend API
 export interface AuditReport {
-  hotelId: string;
+  hotelId?: string;
   hotelName: string;
   city: string;
   state: string;
   address?: string;
-  
-  // Executive Summary (always free)
+  analyzedAt?: string;
+
+  // Overall scores
+  overallScore: number;
+  overallGrade: Grade;
+
+  // Executive Summary
   executiveSummary: ExecutiveSummary;
-  
-  // 6 Main Sections (teaser free, full locked)
-  digitalPresence: DigitalPresenceSection;
-  reputation: ReputationSection;
-  socialMedia: SocialMediaSection;
-  advertising: AdvertisingSection;
-  booking: BookingSection;
-  competitive: CompetitiveSection;
-  
-  // Competitor data (top 5 free, full list locked)
-  competitors: CompetitorData[];
-  
-  // Action plan (locked)
-  actionPlan: ActionPlanItem[];
-  
+
+  // 6 Main Categories (each with metrics array)
+  categories?: {
+    digitalPresence: AuditSection;
+    reputation: AuditSection;
+    socialMedia: AuditSection;
+    advertising: AuditSection;
+    booking: AuditSection;
+    competitive: AuditSection;
+  };
+
+  // Legacy flat structure for backward compatibility
+  digitalPresence?: AuditSection;
+  reputation?: AuditSection;
+  socialMedia?: AuditSection;
+  advertising?: AuditSection;
+  booking?: AuditSection;
+  competitive?: AuditSection;
+
+  // Competitor data
+  competitors?: CompetitorData[];
+
+  // Action plan
+  actionPlan?: ActionPlanItem[];
+
   // Metadata
-  generatedAt: string;
-  isFullReportUnlocked: boolean;
+  generatedAt?: string;
+  isFullReportUnlocked?: boolean;
   emailCaptured?: string;
+
+  // API metadata
+  _meta?: {
+    totalMetrics: number;
+    analysisVersion: string;
+    generatedAt: string;
+    competitorsAnalyzed: number;
+  };
 }
 
 // Helper type for section names
-export type SectionName = 
-  | 'digitalPresence' 
-  | 'reputation' 
-  | 'socialMedia' 
-  | 'advertising' 
-  | 'booking' 
+export type SectionName =
+  | 'digitalPresence'
+  | 'reputation'
+  | 'socialMedia'
+  | 'advertising'
+  | 'booking'
   | 'competitive';
 
-// API Response types
+// Backend API response structure
+export interface AnalyzeMetricsResponse {
+  success: boolean;
+  data: AuditReport;
+  error?: string;
+  rawResponse?: string;
+}
+
+// Legacy API Response types
 export interface AuditAPIResponse {
   success: boolean;
   data: AuditReport;
@@ -166,7 +150,10 @@ export interface AuditAPIResponse {
 
 export interface EmailCaptureRequest {
   email: string;
-  hotelId: string;
+  hotelId?: string;
+  hotelName: string;
+  city: string;
+  state: string;
   section?: SectionName | 'all';
 }
 
@@ -189,4 +176,27 @@ export interface AuditUIState {
   error: string | null;
   report: AuditReport | null;
   emailCaptureModal: EmailCaptureState;
+}
+
+// Helper function to get color from score
+export function getScoreColor(score: number | null): ScoreColor {
+  if (score === null) return 'amber';
+  if (score >= 75) return 'green';
+  if (score >= 50) return 'amber';
+  return 'red';
+}
+
+// Helper function to get grade from score
+export function getGradeFromScore(score: number): Grade {
+  if (score >= 95) return 'A+';
+  if (score >= 90) return 'A';
+  if (score >= 87) return 'A-';
+  if (score >= 83) return 'B+';
+  if (score >= 80) return 'B';
+  if (score >= 77) return 'B-';
+  if (score >= 73) return 'C+';
+  if (score >= 70) return 'C';
+  if (score >= 67) return 'C-';
+  if (score >= 60) return 'D';
+  return 'F';
 }
