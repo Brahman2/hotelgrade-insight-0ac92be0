@@ -11,6 +11,10 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
   state: "IL",
   address: "123 Michigan Ave, Chicago, IL 60601",
 
+  // Overall scores (required at top level)
+  overallScore: 78,
+  overallGrade: "B+",
+
   executiveSummary: {
     overallScore: 78,
     overallGrade: "B+",
@@ -39,57 +43,10 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
     score: 72,
     color: "amber",
     isLocked: false,
-    googleBusinessProfile: {
-      score: 88,
-      color: "green",
-      label: "Google Business Profile",
-      value: "88/100",
-      insight: "Well-optimized with 120+ photos and regular updates.",
-      recommendation: "Add virtual tour and more interior photos.",
-    },
-    websitePerformance: {
-      score: 62,
-      color: "amber",
-      label: "Website Performance",
-      value: "3.2s load time",
-      insight: "Mobile load time exceeds recommended 2 seconds.",
-      recommendation: "Compress images and enable caching (could boost conversions by 18%).",
-    },
-    searchVisibility: {
-      score: 75,
-      color: "green",
-      label: "Search Visibility",
-      value: "Page 1 for 3 keywords",
-      insight: "Ranking for brand + location searches.",
-      recommendation: 'Target long-tail keywords like "romantic hotel Chicago".',
-    },
-    brandProtection: {
-      score: null,
-      color: "amber",
-      label: "Brand Protection",
-      isLocked: true,
-      insight: "Unlock to see brand mention analysis",
-    },
-    mobileFriendly: {
-      score: null,
-      color: "green",
-      label: "Mobile Experience",
-      isLocked: true,
-    },
-    localSEO: {
-      score: null,
-      color: "amber",
-      label: "Local SEO",
-      isLocked: true,
-    },
-    directoryListings: {
-      score: null,
-      color: "green",
-      label: "Directory Listings",
-      isLocked: true,
-    },
     metrics: [
       {
+        id: "dp_1",
+        name: "Google Business Profile",
         title: "Google Business Profile",
         score: 88,
         color: "green",
@@ -107,6 +64,8 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
         expectedImpact: "Adding video content and improving response times could increase direct calls by 25-30% and boost local search ranking by 2-3 positions within 60 days."
       },
       {
+        id: "dp_2",
+        name: "Website Performance",
         title: "Website Performance",
         score: 62,
         color: "amber",
@@ -125,6 +84,8 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
         expectedImpact: "Reducing load time to under 2 seconds could decrease bounce rate by 25%, increase time-on-site by 35%, and improve conversion rate by 15-20%. Expected revenue impact: $3-5K additional monthly bookings."
       },
       {
+        id: "dp_3",
+        name: "Search Visibility",
         title: "Search Visibility",
         score: 75,
         color: "green",
@@ -143,6 +104,8 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
         expectedImpact: "Capturing even 10% of available long-tail traffic could add 60-80 qualified visitors monthly, generating 15-20 additional bookings worth $4-6K monthly revenue."
       },
       {
+        id: "dp_4",
+        name: "Brand Protection",
         title: "Brand Protection",
         score: 45,
         color: "red",
@@ -162,6 +125,8 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
         expectedImpact: "Defensive campaign will recapture 80% of lost brand traffic, preventing $2,000-2,400 monthly revenue loss. ROI: 700-800%. Payback period: immediate."
       },
       {
+        id: "dp_5",
+        name: "Mobile Experience",
         title: "Mobile Experience",
         score: 58,
         color: "amber",
@@ -181,6 +146,8 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
         expectedImpact: "Reducing abandonment from 72% to 50% would increase mobile bookings by 44%. With 200 monthly mobile booking attempts, that's 44 additional bookings worth $8,800 monthly revenue."
       },
       {
+        id: "dp_6",
+        name: "Local SEO",
         title: "Local SEO",
         score: 52,
         color: "amber",
@@ -200,6 +167,8 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
         expectedImpact: "Complete, consistent citations could improve local pack ranking by 2-4 positions, increasing visibility for 'hotel near me' searches by 40%. Expected monthly impact: 30-40 additional local search bookings."
       },
       {
+        id: "dp_7",
+        name: "Photos & Visual Content",
         title: "Photos & Visual Content",
         score: 71,
         color: "green",
@@ -225,56 +194,10 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
     score: 82,
     color: "green",
     isLocked: false,
-    overallRating: {
-      score: 92,
-      color: "green",
-      label: "Overall Rating",
-      value: "4.6 ★",
-      insight: "Strong rating across all platforms.",
-      recommendation: "Maintain quality and encourage reviews from happy guests.",
-    },
-    reviewVolume: {
-      score: 78,
-      color: "green",
-      label: "Review Volume",
-      value: "847 reviews",
-      insight: "Good review volume but competitors averaging 1,200+.",
-      recommendation: "Implement post-stay email campaign (target 50+ reviews/month).",
-    },
-    reviewRecency: {
-      score: 85,
-      color: "green",
-      label: "Review Recency",
-      value: "12 in last 30 days",
-      insight: "Consistent recent reviews signal active property.",
-    },
-    responseRate: {
-      score: null,
-      color: "amber",
-      label: "Response Rate",
-      isLocked: true,
-      insight: "Unlock to see response analysis",
-    },
-    sentimentScore: {
-      score: null,
-      color: "green",
-      label: "Sentiment Analysis",
-      isLocked: true,
-    },
-    reviewDistribution: {
-      score: null,
-      color: "green",
-      label: "Rating Distribution",
-      isLocked: true,
-    },
-    competitivePosition: {
-      score: null,
-      color: "green",
-      label: "Competitive Position",
-      isLocked: true,
-    },
     metrics: [
       {
+        id: "rep_1",
+        name: "Overall Rating",
         title: "Overall Rating",
         score: 92,
         color: "green",
@@ -293,6 +216,8 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
         expectedImpact: "Maintaining 4.6+ rating while improving service to 4.5+ could increase booking conversion by 8-12% and justify 3-5% rate premium. Worth approximately $4-6K additional monthly revenue."
       },
       {
+        id: "rep_2",
+        name: "Review Volume",
         title: "Review Volume",
         score: 82,
         color: "green",
@@ -311,6 +236,8 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
         expectedImpact: "Increasing to 25+ monthly reviews could improve conversion rate by 15-18%, worth $4-6K additional monthly revenue. Also improves rankings on all OTA platforms."
       },
       {
+        id: "rep_3",
+        name: "Review Recency",
         title: "Review Recency",
         score: 91,
         color: "green",
@@ -329,6 +256,8 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
         expectedImpact: "Stabilizing at 15-20 monthly reviews consistently (vs current 7-18 variance) improves search algorithm performance by 12-15%, increasing organic visibility and bookings by $3-5K monthly."
       },
       {
+        id: "rep_4",
+        name: "Response Rate",
         title: "Response Rate",
         score: 91,
         color: "green",
@@ -347,6 +276,8 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
         expectedImpact: "100% response rate within 24 hours could increase booking conversion by 8-10% among review-sensitive travelers (approximately 30% of your audience), worth $2-3K monthly."
       },
       {
+        id: "rep_5",
+        name: "Rating Trends",
         title: "Rating Trends",
         score: 79,
         color: "green",
@@ -366,6 +297,8 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
         expectedImpact: "Achieving 4.5+ stars could increase organic visibility by 35%, improve conversion rate by 18-23%, and generate $6-9K additional monthly revenue. Top performers at 4.7+ see 2x booking rates."
       },
       {
+        id: "rep_6",
+        name: "Platform Distribution",
         title: "Platform Distribution",
         score: 68,
         color: "amber",
@@ -385,6 +318,8 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
         expectedImpact: "Balanced review distribution could improve OTA rankings by 5-10 positions, increasing visibility and bookings by 25-30% on those platforms. Worth $7-11K additional monthly revenue."
       },
       {
+        id: "rep_7",
+        name: "Review Quality",
         title: "Review Quality",
         score: 73,
         color: "green",
@@ -410,48 +345,10 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
     score: 65,
     color: "amber",
     isLocked: false,
-    facebookPresence: {
-      score: 72,
-      color: "amber",
-      label: "Facebook Presence",
-      value: "2,400 followers",
-      insight: "Active page but engagement below industry average.",
-      recommendation: "Post 3-4x per week with guest photos and local events.",
-    },
-    instagramPresence: {
-      score: 68,
-      color: "amber",
-      label: "Instagram Presence",
-      value: "1,850 followers",
-      insight: "Good visual content but inconsistent posting.",
-      recommendation: "Daily Stories + 3 feed posts per week with branded hashtag.",
-    },
-    engagement: {
-      score: null,
-      color: "red",
-      label: "Engagement Rate",
-      isLocked: true,
-    },
-    contentQuality: {
-      score: null,
-      color: "amber",
-      label: "Content Quality",
-      isLocked: true,
-    },
-    postFrequency: {
-      score: null,
-      color: "amber",
-      label: "Post Frequency",
-      isLocked: true,
-    },
-    followerGrowth: {
-      score: null,
-      color: "green",
-      label: "Follower Growth",
-      isLocked: true,
-    },
     metrics: [
       {
+        id: "sm_1",
+        name: "Facebook Presence",
         score: 72,
         color: "amber",
         label: "Facebook Presence",
@@ -460,6 +357,8 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
         recommendation: "Post 3-4x per week with guest photos and local events.",
       },
       {
+        id: "sm_2",
+        name: "Instagram Presence",
         score: 68,
         color: "amber",
         label: "Instagram Presence",
@@ -468,24 +367,32 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
         recommendation: "Daily Stories + 3 feed posts per week with branded hashtag.",
       },
       {
+        id: "sm_3",
+        name: "Engagement Rate",
         score: null,
         color: "red",
         label: "Engagement Rate",
         isLocked: true,
       },
       {
+        id: "sm_4",
+        name: "Content Quality",
         score: null,
         color: "amber",
         label: "Content Quality",
         isLocked: true,
       },
       {
+        id: "sm_5",
+        name: "Post Frequency",
         score: null,
         color: "amber",
         label: "Post Frequency",
         isLocked: true,
       },
       {
+        id: "sm_6",
+        name: "Follower Growth",
         score: null,
         color: "green",
         label: "Follower Growth",
@@ -498,47 +405,10 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
     score: 58,
     color: "amber",
     isLocked: false,
-    googleAdsPresence: {
-      score: 48,
-      color: "red",
-      label: "Google Ads Presence",
-      value: "Not detected",
-      insight: "No paid search campaigns found.",
-      recommendation: "Launch branded + competitor keyword campaigns (ROI typically 3-5x).",
-    },
-    metaAdsPresence: {
-      score: null,
-      color: "red",
-      label: "Meta Ads Presence",
-      isLocked: true,
-    },
-    metasearchVisibility: {
-      score: null,
-      color: "red",
-      label: "Metasearch Visibility",
-      isLocked: true,
-      insight: "Unlock to see Google Hotel Ads analysis",
-    },
-    brandProtection: {
-      score: null,
-      color: "amber",
-      label: "Brand Protection",
-      isLocked: true,
-    },
-    adSpendEfficiency: {
-      score: null,
-      color: "red",
-      label: "Ad Spend Efficiency",
-      isLocked: true,
-    },
-    competitorAdGaps: {
-      score: null,
-      color: "amber",
-      label: "Competitor Ad Gaps",
-      isLocked: true,
-    },
     metrics: [
       {
+        id: "ad_1",
+        name: "Google Ads Presence",
         title: "Google Ads Presence",
         score: 48,
         color: "red",
@@ -558,6 +428,8 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
         expectedImpact: "Conservative estimate: $500 monthly spend generates 15-20 bookings at $30-35 cost per acquisition. Revenue: $3,000-4,000 monthly. ROI: 500-700%. Scales profitably up to $2,000/month budget."
       },
       {
+        id: "ad_2",
+        name: "Meta Ads Presence",
         title: "Meta Ads Presence",
         score: 35,
         color: "red",
@@ -577,6 +449,8 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
         expectedImpact: "$300/month Meta ads could recapture 25-30 lost bookings from website visitors. Revenue impact: $5,000-6,000 monthly. ROI: 1,500-1,900%. Retargeting typically shows positive ROI within first month."
       },
       {
+        id: "ad_3",
+        name: "Metasearch Visibility",
         title: "Metasearch Visibility",
         score: 41,
         color: "red",
@@ -596,6 +470,8 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
         expectedImpact: "Google Hotel Ads at $400-500/month spend typically generates 25-35 bookings at 12% commission. Net revenue after commission: $5,500-7,500 monthly. More profitable than OTA bookings."
       },
       {
+        id: "ad_4",
+        name: "Brand Defense",
         title: "Brand Defense",
         score: 45,
         color: "amber",
@@ -615,6 +491,8 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
         expectedImpact: "Defensive campaign will recapture 80% of lost brand traffic, preventing $2,000-2,400 monthly revenue loss. ROI: 700-800%. Payback period: immediate."
       },
       {
+        id: "ad_5",
+        name: "Ad Spend Efficiency",
         title: "Ad Spend Efficiency",
         score: 0,
         color: "red",
@@ -634,6 +512,8 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
         expectedImpact: "Starting with $800/month in high-efficiency campaigns should generate $4,000-5,000 monthly revenue (500-625% blended ROI) while building performance data to optimize future spending."
       },
       {
+        id: "ad_6",
+        name: "Competitor Ad Gaps",
         title: "Competitor Ad Gaps",
         score: 38,
         color: "amber",
@@ -659,54 +539,10 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
     score: 75,
     color: "green",
     isLocked: false,
-    otaPresence: {
-      score: 85,
-      color: "green",
-      label: "OTA Presence",
-      value: "Listed on 8 platforms",
-      insight: "Strong distribution across major OTAs.",
-      recommendation: "Ensure rate parity and current inventory.",
-    },
-    bookingDotCom: {
-      score: 82,
-      color: "green",
-      label: "Booking.com Profile",
-      value: "8.8/10 rating",
-      insight: "Well-optimized with Genius program.",
-    },
-    expedia: {
-      score: null,
-      color: "green",
-      label: "Expedia Profile",
-      isLocked: true,
-    },
-    directBookingFlow: {
-      score: null,
-      color: "amber",
-      label: "Direct Booking Flow",
-      isLocked: true,
-      insight: "Unlock to see conversion analysis",
-    },
-    mobileBooking: {
-      score: null,
-      color: "green",
-      label: "Mobile Booking",
-      isLocked: true,
-    },
-    paymentOptions: {
-      score: null,
-      color: "green",
-      label: "Payment Options",
-      isLocked: true,
-    },
-    cancellationPolicy: {
-      score: null,
-      color: "amber",
-      label: "Cancellation Policy",
-      isLocked: true,
-    },
     metrics: [
       {
+        id: "bk_1",
+        name: "OTA Presence",
         score: 85,
         color: "green",
         label: "OTA Presence",
@@ -715,6 +551,8 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
         recommendation: "Ensure rate parity and current inventory.",
       },
       {
+        id: "bk_2",
+        name: "Booking.com Profile",
         score: 82,
         color: "green",
         label: "Booking.com Profile",
@@ -722,12 +560,16 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
         insight: "Well-optimized with Genius program.",
       },
       {
+        id: "bk_3",
+        name: "Expedia Profile",
         score: null,
         color: "green",
         label: "Expedia Profile",
         isLocked: true,
       },
       {
+        id: "bk_4",
+        name: "Direct Booking Flow",
         score: null,
         color: "amber",
         label: "Direct Booking Flow",
@@ -735,18 +577,24 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
         insight: "Unlock to see conversion analysis",
       },
       {
+        id: "bk_5",
+        name: "Mobile Booking",
         score: null,
         color: "green",
         label: "Mobile Booking",
         isLocked: true,
       },
       {
+        id: "bk_6",
+        name: "Payment Options",
         score: null,
         color: "green",
         label: "Payment Options",
         isLocked: true,
       },
       {
+        id: "bk_7",
+        name: "Cancellation Policy",
         score: null,
         color: "amber",
         label: "Cancellation Policy",
@@ -759,47 +607,10 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
     score: 71,
     color: "amber",
     isLocked: false,
-    marketPosition: {
-      score: 68,
-      color: "amber",
-      label: "Market Position",
-      value: "#3 of 12",
-      insight: "Solid mid-tier position with room to improve.",
-      recommendation: "Focus on unique differentiators to reach #1-2.",
-    },
-    priceCompetitiveness: {
-      score: 75,
-      color: "green",
-      label: "Price Competitiveness",
-      value: "$189 average",
-      insight: "Well-positioned at 5% below market leader.",
-    },
-    amenityComparison: {
-      score: null,
-      color: "amber",
-      label: "Amenity Comparison",
-      isLocked: true,
-    },
-    ratingVsCompetitors: {
-      score: null,
-      color: "green",
-      label: "Rating vs Competitors",
-      isLocked: true,
-    },
-    uniqueAdvantages: {
-      score: null,
-      color: "green",
-      label: "Unique Advantages",
-      isLocked: true,
-    },
-    competitiveThreats: {
-      score: null,
-      color: "amber",
-      label: "Competitive Threats",
-      isLocked: true,
-    },
     metrics: [
       {
+        id: "comp_1",
+        name: "Market Position",
         score: 68,
         color: "amber",
         label: "Market Position",
@@ -808,6 +619,8 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
         recommendation: "Focus on unique differentiators to reach #1-2.",
       },
       {
+        id: "comp_2",
+        name: "Price Competitiveness",
         score: 75,
         color: "green",
         label: "Price Competitiveness",
@@ -815,24 +628,32 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
         insight: "Well-positioned at 5% below market leader.",
       },
       {
+        id: "comp_3",
+        name: "Amenity Comparison",
         score: null,
         color: "amber",
         label: "Amenity Comparison",
         isLocked: true,
       },
       {
+        id: "comp_4",
+        name: "Rating vs Competitors",
         score: null,
         color: "green",
         label: "Rating vs Competitors",
         isLocked: true,
       },
       {
+        id: "comp_5",
+        name: "Unique Advantages",
         score: null,
         color: "green",
         label: "Unique Advantages",
         isLocked: true,
       },
       {
+        id: "comp_6",
+        name: "Competitive Threats",
         score: null,
         color: "amber",
         label: "Competitive Threats",
