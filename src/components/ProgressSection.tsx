@@ -12,7 +12,7 @@ interface ProgressSectionProps {
 interface AnalysisStep {
   id: number;
   text: string;
-  duration: number; // milliseconds
+  duration: number;
   previewType: 'images' | 'reviews' | 'rankings' | 'social' | 'ads' | 'competitors' | null;
 }
 
@@ -25,7 +25,6 @@ const steps: AnalysisStep[] = [
   { id: 6, text: "Comparing with competitors...", duration: 2000, previewType: 'competitors' },
 ];
 
-// Mock preview data (will be replaced with real API data)
 const mockImages = [
   "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400",
   "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=400",
@@ -51,7 +50,6 @@ export function ProgressSection({ isComplete, competitorCount, hotelName, onAnal
   const [imageIndex, setImageIndex] = useState(0);
   const [reviewIndex, setReviewIndex] = useState(0);
 
-  // Progressive step completion
   useEffect(() => {
     if (isComplete || currentStep >= steps.length) return;
 
@@ -62,7 +60,6 @@ export function ProgressSection({ isComplete, competitorCount, hotelName, onAnal
       if (currentStep < steps.length - 1) {
         setCurrentStep(prev => prev + 1);
       } else {
-        // All steps complete
         onAnalysisComplete?.();
       }
     }, step.duration);
@@ -70,7 +67,6 @@ export function ProgressSection({ isComplete, competitorCount, hotelName, onAnal
     return () => clearTimeout(timer);
   }, [currentStep, isComplete, onAnalysisComplete]);
 
-  // Update preview data based on current step
   useEffect(() => {
     if (currentStep >= steps.length) return;
 
@@ -91,7 +87,6 @@ export function ProgressSection({ isComplete, competitorCount, hotelName, onAnal
     }
   }, [currentStep]);
 
-  // Rotate images every 800ms
   useEffect(() => {
     if (previewData?.type === 'images') {
       const interval = setInterval(() => {
@@ -101,7 +96,6 @@ export function ProgressSection({ isComplete, competitorCount, hotelName, onAnal
     }
   }, [previewData]);
 
-  // Rotate reviews every 1200ms
   useEffect(() => {
     if (previewData?.type === 'reviews') {
       const interval = setInterval(() => {
@@ -132,12 +126,10 @@ export function ProgressSection({ isComplete, competitorCount, hotelName, onAnal
       <h3 className="font-semibold mb-4">Analyzing {hotelName || "your hotel"}...</h3>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Left: Progress Steps */}
         <div className="space-y-3">
           {steps.map((step, idx) => {
             const isCompleted = completedSteps.includes(step.id);
             const isCurrent = currentStep === idx;
-            const isPending = idx > currentStep;
 
             return (
               <div
@@ -165,7 +157,6 @@ export function ProgressSection({ isComplete, competitorCount, hotelName, onAnal
           })}
         </div>
 
-        {/* Right: Live Preview */}
         <div className="bg-muted/30 rounded-lg p-4 min-h-[200px] flex items-center justify-center">
           {previewData?.type === 'images' && (
             <div className="w-full h-full flex flex-col items-center justify-center">
@@ -246,5 +237,3 @@ export function ProgressSection({ isComplete, competitorCount, hotelName, onAnal
       </div>
     </Card>
   );
-}
-File 2: src/pages/Analyze.tsx
