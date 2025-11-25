@@ -237,3 +237,4 @@ export function ProgressSection({ isComplete, competitorCount, hotelName, onAnal
       </div>
     </Card>
   );
+}
