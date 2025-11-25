@@ -16,7 +16,7 @@ export async function analyzeHotelMetrics(
 ): Promise<AnalyzeMetricsResponse> {
   console.log(`🔍 Analyzing metrics for: ${hotelName}, ${city}, ${state}`);
 
-  const response = await fetch(`${API_BASE_URL}/api/analyze-metrics`, {
+  const response = await fetch(`${API_BASE_URL}/api/analyze-metrics-stream`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -38,7 +38,39 @@ export async function analyzeHotelMetrics(
 
   return data;
 }
+/**
+ * Fetch detailed analysis for a specific section when user unlocks it
+ */
+export async function fetchSectionDetails(
+  hotelName: string,
+  city: string,
+  state: string,
+  category: string,
+  metrics: any[]
+): Promise<{ success: boolean; category: string; details: any }> {
+  console.log(`🔍 Fetching detailed analysis for section: ${category}`);
 
+  const response = await fetch(`${API_BASE_URL}/api/section-details`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ hotelName, city, state, category, metrics }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `API error: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export function mergeSectionDetails(existingMetrics: any[], detailsData: { metrics: any[] }): any[] {
+  if (!detailsData?.metrics) return existingMetrics;
+  return existingMetrics.map((metric) => {
+    const detail = detailsData.metrics.find((d: any) => d.id === metric.id);
+    return detail ? { ...metric, detailedAnalysis: detail.detailedAnalysis, actionSteps: detail.actionSteps || [], expectedImpact: detail.expectedImpact } : metric;
+  });
+}
 /**
  * Find competitors for a hotel
  */

@@ -247,3 +247,4 @@ export function ProgressSection({ isComplete, competitorCount, hotelName, onAnal
     </Card>
   );
 }
+File 2: src/pages/Analyze.tsx

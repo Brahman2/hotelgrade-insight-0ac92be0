@@ -10,7 +10,7 @@ import { EmailCaptureModal } from "@/components/audit/EmailCaptureModal";
 import { CompetitorMap } from "@/components/CompetitorMap";
 import { ProgressSection } from "@/components/ProgressSection";
 import { MOCK_AUDIT_REPORT } from "@/lib/mockData";
-import { analyzeHotelMetrics, transformApiResponse, SECTION_INFO, fetchSectionDetails, mergeSectionDetails } from "@/lib/api";
+import { analyzeHotelMetrics, transformApiResponse, SECTION_INFO } from "@/lib/api";
 import type { AuditReport, AuditSection } from "@/types/audit";
 import { getGradeFromScore } from "@/types/audit";
 import {
@@ -46,8 +46,6 @@ const Analyze = () => {
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [auditData, setAuditData] = useState<AuditReport | null>(null);
   const [useRealApi, setUseRealApi] = useState(true); // Toggle for API vs mock
-  const [loadingSections, setLoadingSections] = useState<string[]>([]); // Track which sections are loading details
-  const [sectionToUnlock, setSectionToUnlock] = useState<string | null>(null); // Which section triggered the email modal
 
   // Start analysis when progress section completes
   const handleAnalysisComplete = async () => {
@@ -101,99 +99,9 @@ const Analyze = () => {
 
   const handleEmailSubmit = async (email: string) => {
     setUserEmail(email);
+    setIsAllUnlocked(true);
+    setUnlockedSections(["digitalPresence", "reputation", "socialMedia", "advertising", "booking", "competitive"]);
     setShowEmailModal(false);
-
-    // If unlocking all sections
-    if (sectionToUnlock === "all" || !sectionToUnlock) {
-      setIsAllUnlocked(true);
-      const allSections = ["digitalPresence", "reputation", "socialMedia", "advertising", "booking", "competitive"];
-      setUnlockedSections(allSections);
-
-      // Fetch details for all sections in parallel
-      if (auditData && useRealApi) {
-        setLoadingSections(allSections);
-        await Promise.all(
-          allSections.map((sectionId) => fetchAndMergeSectionDetails(sectionId))
-        );
-        setLoadingSections([]);
-      }
-    } else {
-      // Unlock specific section
-      setUnlockedSections((prev) => [...prev, sectionToUnlock]);
-
-      // Fetch details for the specific section
-      if (auditData && useRealApi) {
-        await fetchAndMergeSectionDetails(sectionToUnlock);
-      }
-    }
-
-    setSectionToUnlock(null);
-  };
-
-  // Fetch detailed analysis for a section and merge into auditData
-  const fetchAndMergeSectionDetails = async (sectionId: string) => {
-    if (!auditData) return;
-
-    setLoadingSections((prev) => [...prev, sectionId]);
-
-    try {
-      // Get current metrics for this section
-      const sectionData = auditData.categories?.[sectionId as keyof typeof auditData.categories]
-        || auditData[sectionId as keyof AuditReport] as AuditSection | undefined;
-
-      if (!sectionData?.metrics) {
-        console.warn(`No metrics found for section: ${sectionId}`);
-        return;
-      }
-
-      // Fetch detailed data from API
-      const response = await fetchSectionDetails(
-        formData.hotelName,
-        formData.city,
-        formData.state,
-        sectionId,
-        sectionData.metrics
-      );
-
-      if (response.success && response.details) {
-        // Merge detailed data into existing metrics
-        const enrichedMetrics = mergeSectionDetails(sectionData.metrics, response.details);
-
-        // Update auditData with enriched metrics
-        setAuditData((prevData) => {
-          if (!prevData) return prevData;
-
-          const updatedCategories = {
-            ...prevData.categories,
-            [sectionId]: {
-              ...prevData.categories?.[sectionId as keyof typeof prevData.categories],
-              metrics: enrichedMetrics,
-            },
-          };
-
-          return {
-            ...prevData,
-            categories: updatedCategories,
-            [sectionId]: {
-              ...sectionData,
-              metrics: enrichedMetrics,
-            },
-          };
-        });
-
-        console.log(`✅ Section ${sectionId} enriched with detailed data`);
-      }
-    } catch (error) {
-      console.error(`❌ Failed to fetch details for ${sectionId}:`, error);
-    } finally {
-      setLoadingSections((prev) => prev.filter((id) => id !== sectionId));
-    }
-  };
-
-  // Handle section-specific unlock button click
-  const handleUnlockSection = (sectionId: string) => {
-    setSectionToUnlock(sectionId);
-    setShowEmailModal(true);
   };
 
   const sectionIcons = {
@@ -424,7 +332,7 @@ const Analyze = () => {
               <Button
                 size="lg"
                 variant="secondary"
-                onClick={() => handleUnlockSection("all")}
+                onClick={() => setShowEmailModal(true)}
                 className="bg-white text-primary hover:bg-white/90 shadow-lg whitespace-nowrap"
               >
                 <Mail className="w-4 h-4 mr-2" />
@@ -462,26 +370,16 @@ const Analyze = () => {
                           score={sectionScore}
                           size="sm"
                         />
-                        {loadingSections.includes(section.id) ? (
-                          <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium flex items-center gap-1">
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            Loading Details...
-                          </span>
-                        ) : isUnlocked ? (
+                        {isUnlocked ? (
                           <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium flex items-center gap-1">
                             <CheckCircle className="w-4 h-4" />
                             Unlocked
                           </span>
                         ) : (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleUnlockSection(section.id)}
-                            className="gap-1"
-                          >
-                            <Unlock className="w-4 h-4" />
-                            Unlock Section
-                          </Button>
+                          <span className="px-3 py-1 bg-muted text-muted-foreground rounded-full text-sm font-medium flex items-center gap-1">
+                            <Lock className="w-4 h-4" />
+                            Locked
+                          </span>
                         )}
                       </div>
                     </div>
@@ -511,7 +409,7 @@ const Analyze = () => {
                       <UnlockBanner
                         sectionTitle={section.title}
                         lockedCount={section.data.metrics.length - 2}
-                        onUnlock={() => handleUnlockSection(section.id)}
+                        onUnlock={() => setShowEmailModal(true)}
                       />
                     )}
 
@@ -573,7 +471,7 @@ const Analyze = () => {
               <Button
                 size="lg"
                 variant="secondary"
-                onClick={() => handleUnlockSection("all")}
+                onClick={() => setShowEmailModal(true)}
                 className="bg-white text-primary hover:bg-white/90 shadow-lg"
               >
                 <Mail className="w-5 h-5 mr-2" />
