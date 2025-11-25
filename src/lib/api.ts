@@ -1,10 +1,10 @@
 // src/lib/api.ts
 // API service for HotelGrader backend communication
 
-import type { AnalyzeMetricsResponse, AuditReport, AuditSection, SectionName } from '@/types/audit';
+import type { AnalyzeMetricsResponse, AuditReport, AuditSection, SectionName } from "@/types/audit";
 
 // Backend API URL - change this for production
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://web-production-13e22.up.railway.app';
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://web-production-13e22.up.railway.app";
 
 /**
  * Analyze a hotel's 40 public signal metrics
@@ -12,14 +12,14 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://web-production-13e
 export async function analyzeHotelMetrics(
   hotelName: string,
   city: string,
-  state: string
+  state: string,
 ): Promise<AnalyzeMetricsResponse> {
   console.log(`🔍 Analyzing metrics for: ${hotelName}, ${city}, ${state}`);
 
-  const response = await fetch(`${API_BASE_URL}/api/analyze-metrics-stream`, {
-    method: 'POST',
+  const response = await fetch(`${API_BASE_URL}/api/analyze-metrics`, {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       hotel_name: hotelName,
@@ -34,7 +34,7 @@ export async function analyzeHotelMetrics(
   }
 
   const data = await response.json();
-  console.log('✅ Analysis complete:', data);
+  console.log("✅ Analysis complete:", data);
 
   return data;
 }
@@ -46,13 +46,13 @@ export async function fetchSectionDetails(
   city: string,
   state: string,
   category: string,
-  metrics: any[]
+  metrics: any[],
 ): Promise<{ success: boolean; category: string; details: any }> {
   console.log(`🔍 Fetching detailed analysis for section: ${category}`);
 
   const response = await fetch(`${API_BASE_URL}/api/section-details`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ hotelName, city, state, category, metrics }),
   });
 
@@ -68,21 +68,24 @@ export function mergeSectionDetails(existingMetrics: any[], detailsData: { metri
   if (!detailsData?.metrics) return existingMetrics;
   return existingMetrics.map((metric) => {
     const detail = detailsData.metrics.find((d: any) => d.id === metric.id);
-    return detail ? { ...metric, detailedAnalysis: detail.detailedAnalysis, actionSteps: detail.actionSteps || [], expectedImpact: detail.expectedImpact } : metric;
+    return detail
+      ? {
+          ...metric,
+          detailedAnalysis: detail.detailedAnalysis,
+          actionSteps: detail.actionSteps || [],
+          expectedImpact: detail.expectedImpact,
+        }
+      : metric;
   });
 }
 /**
  * Find competitors for a hotel
  */
-export async function findCompetitors(
-  hotelName: string,
-  city: string,
-  state: string
-) {
+export async function findCompetitors(hotelName: string, city: string, state: string) {
   const response = await fetch(`${API_BASE_URL}/api/find-competitors`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       hotel_name: hotelName,
@@ -111,16 +114,16 @@ export function transformApiResponse(apiData: any): AuditReport {
 
   // Build the transformed report
   const report: AuditReport = {
-    hotelName: data.hotelName || '',
-    city: data.city || '',
-    state: data.state || '',
+    hotelName: data.hotelName || "",
+    city: data.city || "",
+    state: data.state || "",
     analyzedAt: data.analyzedAt || new Date().toISOString(),
     overallScore: data.overallScore || 0,
-    overallGrade: data.overallGrade || 'C',
+    overallGrade: data.overallGrade || "C",
     executiveSummary: {
       overallScore: data.overallScore || 0,
-      overallGrade: data.overallGrade || 'C',
-      keyFinding: data.executiveSummary?.keyFinding || '',
+      overallGrade: data.overallGrade || "C",
+      keyFinding: data.executiveSummary?.keyFinding || "",
       strengths: data.executiveSummary?.strengths || [],
       criticalIssues: data.executiveSummary?.criticalIssues || [],
       quickWins: data.executiveSummary?.quickWins || [],
@@ -163,17 +166,17 @@ function transformSection(section: any): AuditSection {
     score: section.score || 0,
     color: getColorFromScore(section.score),
     metrics: (section.metrics || []).map((metric: any) => ({
-      id: metric.id || '',
-      name: metric.name || metric.title || '',
-      title: metric.name || metric.title || '',
-      label: metric.name || metric.title || '',
+      id: metric.id || "",
+      name: metric.name || metric.title || "",
+      title: metric.name || metric.title || "",
+      label: metric.name || metric.title || "",
       score: metric.score || 0,
       color: getColorFromScore(metric.score),
-      insight: metric.insight || '',
-      recommendation: metric.recommendation || '',
-      detailedAnalysis: metric.detailedAnalysis || '',
+      insight: metric.insight || "",
+      recommendation: metric.recommendation || "",
+      detailedAnalysis: metric.detailedAnalysis || "",
       actionSteps: metric.actionSteps || [],
-      expectedImpact: metric.expectedImpact || '',
+      expectedImpact: metric.expectedImpact || "",
       isLocked: false,
     })),
   };
@@ -182,11 +185,11 @@ function transformSection(section: any): AuditSection {
 /**
  * Get color based on score
  */
-function getColorFromScore(score: number | null): 'green' | 'amber' | 'red' {
-  if (score === null || score === undefined) return 'amber';
-  if (score >= 75) return 'green';
-  if (score >= 50) return 'amber';
-  return 'red';
+function getColorFromScore(score: number | null): "green" | "amber" | "red" {
+  if (score === null || score === undefined) return "amber";
+  if (score >= 75) return "green";
+  if (score >= 50) return "amber";
+  return "red";
 }
 
 /**
@@ -194,27 +197,27 @@ function getColorFromScore(score: number | null): 'green' | 'amber' | 'red' {
  */
 export const SECTION_INFO: Record<SectionName, { title: string; description: string }> = {
   digitalPresence: {
-    title: 'Digital Presence',
-    description: 'Your online visibility and digital footprint',
+    title: "Digital Presence",
+    description: "Your online visibility and digital footprint",
   },
   reputation: {
-    title: 'Reputation Management',
-    description: 'Review performance across all major platforms',
+    title: "Reputation Management",
+    description: "Review performance across all major platforms",
   },
   socialMedia: {
-    title: 'Social Media',
-    description: 'Social media presence and engagement metrics',
+    title: "Social Media",
+    description: "Social media presence and engagement metrics",
   },
   advertising: {
-    title: 'Advertising & Paid Media',
-    description: 'Paid advertising presence and effectiveness',
+    title: "Advertising & Paid Media",
+    description: "Paid advertising presence and effectiveness",
   },
   booking: {
-    title: 'Booking & Distribution',
-    description: 'Online booking channels and optimization',
+    title: "Booking & Distribution",
+    description: "Online booking channels and optimization",
   },
   competitive: {
-    title: 'Competitive Intelligence',
-    description: 'Market position and competitor analysis',
+    title: "Competitive Intelligence",
+    description: "Market position and competitor analysis",
   },
 };
