@@ -1,28 +1,31 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { MapPin, Search, TrendingUp, Check, ChevronRight } from "lucide-react";
+import { MapPin, Search, TrendingUp, Check, Building2, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
-import { HotelAutocomplete } from "@/components/HotelAutocomplete";
 
-interface SelectedHotel {
-  name: string;
-  address: string;
-  city: string;
-  state: string;
-  rating?: number;
-  reviews?: number;
-  place_id: string;
-  lat?: number;
-  lng?: number;
-}
+const US_STATES = [
+  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware",
+  "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky",
+  "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi",
+  "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico",
+  "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania",
+  "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont",
+  "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"
+];
 
 const Index = () => {
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedHotel, setSelectedHotel] = useState<SelectedHotel | null>(null);
+  const [formData, setFormData] = useState({
+    hotelName: "",
+    city: "",
+    state: ""
+  });
 
   // Handle scroll for header shadow
   useEffect(() => {
@@ -33,30 +36,19 @@ const Index = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleHotelSelect = (hotel: SelectedHotel) => {
-    setSelectedHotel(hotel);
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!selectedHotel) {
-      toast.error("Please select a hotel from the suggestions");
+    
+    if (!formData.hotelName || !formData.city || !formData.state) {
+      toast.error("Please fill in all fields");
       return;
     }
 
     setIsLoading(true);
-
-    // Navigate with selected hotel data
+    
+    // Simulate processing time
     setTimeout(() => {
-      navigate("/analyze", {
-        state: {
-          hotelName: selectedHotel.name,
-          city: selectedHotel.city,
-          state: selectedHotel.state,
-          address: selectedHotel.address
-        }
-      });
+      navigate("/analyze", { state: formData });
     }, 800);
   };
 
@@ -100,31 +92,39 @@ const Index = () => {
           {/* Form */}
           <form onSubmit={handleSubmit} className="max-w-2xl mx-auto bg-card p-6 md:p-8 rounded-2xl shadow-lg border border-border">
             <div className="space-y-4">
-              <HotelAutocomplete
-                onSelect={handleHotelSelect}
-                placeholder="Search for your hotel..."
+              <Input
+                type="text"
+                placeholder="e.g., Hilton Downtown"
+                value={formData.hotelName}
+                onChange={(e) => setFormData({ ...formData, hotelName: e.target.value })}
+                className="h-12 text-base"
+                required
               />
-
-              {/* Show selected hotel */}
-              {selectedHotel && (
-                <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 text-left">
-                  <p className="font-semibold text-foreground">{selectedHotel.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {selectedHotel.city}, {selectedHotel.state}
-                  </p>
-                  {selectedHotel.rating && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Rating: {selectedHotel.rating} ({selectedHotel.reviews?.toLocaleString()} reviews)
-                    </p>
-                  )}
-                </div>
-              )}
-
-              <Button
-                type="submit"
-                size="lg"
+              <Input
+                type="text"
+                placeholder="e.g., Chicago"
+                value={formData.city}
+                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                className="h-12 text-base"
+                required
+              />
+              <Select value={formData.state} onValueChange={(value) => setFormData({ ...formData, state: value })}>
+                <SelectTrigger className="h-12 text-base">
+                  <SelectValue placeholder="Select state" />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  {US_STATES.map((state) => (
+                    <SelectItem key={state} value={state}>
+                      {state}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button 
+                type="submit" 
+                size="lg" 
                 className="w-full h-14 text-lg font-semibold bg-primary hover:bg-primary/90 text-primary-foreground"
-                disabled={isLoading || !selectedHotel}
+                disabled={isLoading}
               >
                 {isLoading ? "Analyzing..." : "Analyze My Hotel - Free"}
               </Button>
