@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Hotel, MapPin, Loader2, Search } from "lucide-react";
+import { toast } from "sonner";
 
 // API base URL - update for production
 const API_BASE_URL = import.meta.env.VITE_API_URL || "https://web-production-13e22.up.railway.app";
@@ -144,19 +145,32 @@ export const HotelAutocomplete = ({
 
       if (data.success && data.hotel) {
         onSelect(data.hotel);
+        setIsLoading(false);
+      } else {
+        throw new Error("Failed to get hotel details");
       }
     } catch (error) {
       console.error("Error fetching hotel details:", error);
-      // Fallback: use what we have from autocomplete
-      onSelect({
+      
+      // Parse city/state from secondary_text (e.g., "Great America Parkway, Santa Clara, CA, USA")
+      const parts = suggestion.secondary_text?.split(", ") || [];
+      const city = parts.length >= 2 ? parts[parts.length - 3] || "" : "";
+      const state = parts.length >= 2 ? parts[parts.length - 2] || "" : "";
+      
+      // Use fallback data from autocomplete
+      const fallbackHotel = {
         name: suggestion.name,
         address: suggestion.description,
-        city: "",
-        state: "",
+        city: city,
+        state: state,
         place_id: suggestion.place_id,
-      });
-    } finally {
+      };
+      
+      onSelect(fallbackHotel);
       setIsLoading(false);
+      
+      // Show warning toast
+      toast.warning("Using basic hotel info - some details may be limited");
     }
   };
 
